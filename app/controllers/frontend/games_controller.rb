@@ -29,12 +29,7 @@ module Frontend
       url = "#{host}/rooms/#{@game.room_id}:endGame"
 
       # send request to end game
-      res = HTTPX.post(
-        url,
-        headers: {
-          "Authorization" => "Bearer #{session[:token]}"
-        }
-      )
+      res = HTTPX.plugin(:auth).bearer_auth(session[:token]).post(url)
 
       if res.status.in? 200..299
         render json: { status: "ok" }
