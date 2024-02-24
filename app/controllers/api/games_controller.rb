@@ -7,7 +7,7 @@ module Api
     end
 
     def create
-      url = frontend_game_path(rand(1..100))
+      url = frontend_game_url(rand(1..100))
 
       Rails.logger.warn { "Game params: #{params}" }
       Rails.logger.warn { "URL: #{url}" }
