@@ -10,9 +10,12 @@ https://gaas-five-cucumbers.zeabur.app/
 
 https://waterball.notion.site/v1-1-0-4020a50d26014f829492147af37db06f
 
-1. register game 🚧
+1. register game ✔️
 
-   - [ ] register game
+   - [x] register game
+
+<details>
+  <summary>request</summary>
 
 ```json
 // POST /games
@@ -32,11 +35,57 @@ https://waterball.notion.site/v1-1-0-4020a50d26014f829492147af37db06f
 }
 ```
 
+</details>
+
 2. heartbeat api ✔️
 
    - [x] GET /health
 
-3. create game api 📝
+3. create game api 🚧
+
+<details>
+  <summary>request</summary>
+
+```json
+// POST /games
+// Host: {你的後端主機}
+// Authorization: Bearer {房主的Jwt}
+
+{
+  "roomId": "room_385abe92e39a3",
+  "players": [
+    {
+      "id": "6497f6f226b40d440b9a90cc",
+      "nickname": "板橋金城武"
+    },
+    {
+      "id": "6498112b26b40d440b9a90ce",
+      "nickname": "三重彭于晏"
+    },
+    {
+      "id": "6499df157fed0c21a4fd0425",
+      "nickname": "蘆洲劉德華"
+    },
+    {
+      "id": "649836ed7fed0c21a4fd0423",
+      "nickname": "永和周杰倫"
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+  <summary>response</summary>
+
+```json
+{
+  "url": "https://{你的前端主機}/games/{gameId}"
+}
+```
+
+</details>
 
 4. JWT Authorization 📝
 
