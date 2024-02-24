@@ -29,6 +29,8 @@ module Frontend
       url = "#{host}/rooms/#{@game.room_id}:endGame"
 
       # send request to end game
+      Rails.logger.warn { session[:token] }
+      Rails.logger.warn { url }
       res = HTTPX.plugin(:auth).bearer_auth(session[:token]).post(url)
 
       if res.status.in? 200..299
