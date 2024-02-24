@@ -1,21 +1,23 @@
 module Frontend
   class GamesController < ApplicationController
+    before_action :set_game, only: %i(show previous_room next_room end_game)
     after_action :allow_iframe, only: %i(show)
 
-    def show
-      @data = $map[params[:id]]
-      Rails.logger.warn { "Frontend::GamesController#show #{params[:id]}" }
-    end
+    def show; end
 
     def previous_room
-      $map[params[:id]][:previous_room] ||= 0
-      $map[params[:id]][:previous_room] += 1
+      @game.status ||= {}
+      @game.status["previous_room"] ||= 0
+      @game.status["previous_room"] += 1
+      @game.save
       redirect_to frontend_game_path
     end
 
     def next_room
-      $map[params[:id]][:next_room] ||= 0
-      $map[params[:id]][:next_room] += 1
+      @game.status ||= {}
+      @game.status["next_room"] ||= 0
+      @game.status["next_room"] += 1
+      @game.save
       redirect_to frontend_game_path
     end
 
@@ -23,11 +25,15 @@ module Frontend
       # host = "https://lobby.gaas.waterballsa.tw/api/internal"
       # url = "#{host}/rooms/#{$map[params[:id]][:roomId]}:endGame"
 
+      @game.status ||= {}
+
       cookies.each do |k, v|
-        $map[params[:id]][:cookies] ||= {}
-        next if $map[params[:id]][:cookies].key?(k)
-        $map[params[:id]][:cookies][k] = v
+        @game.status["cookies"] ||= {}
+        next if @game.status["cookies"].key?(k)
+        @game.status["cookies"][k] = v
       end
+
+      @game.save
 
       # puts "start"
       # puts request.headers['Authorization']
@@ -41,6 +47,10 @@ module Frontend
     private
     def allow_iframe
       response.headers.delete "X-Frame-Options"
+    end
+
+    def set_game
+      @game = Game.find_by!(uuid: params[:id])
     end
   end
 end

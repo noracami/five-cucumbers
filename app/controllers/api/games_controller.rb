@@ -7,16 +7,13 @@ module Api
     end
 
     def create
-      room_id = params.require(:game).fetch("roomId")
-      players = params.require(:game).fetch("players")
+      room_id = params.fetch("roomId")
+      players = params.fetch("players")
 
       game_id = SecureRandom.base36(8)
-      game_id = SecureRandom.base36(8) if $map.key?(game_id)
+      game_id = SecureRandom.base36(8) while Game.exists?(uuid: game_id)
 
-      $map[game_id] = {
-        roomId: room_id,
-        players: players
-      }
+      game = Game.create!(uuid: game_id, room_id: room_id, players: players)
 
       render json: { url: frontend_game_url(game_id) }, status: 201
     end
