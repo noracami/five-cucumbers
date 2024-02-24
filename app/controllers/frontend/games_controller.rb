@@ -1,7 +1,8 @@
 module Frontend
   class GamesController < ApplicationController
     def show
-      render plain: "Games id: #{params[:id]}"
+      Rails.logger.warn { "Frontend::GamesController#show #{params[:id]}" }
+      render layout: false
     end
   end
 end

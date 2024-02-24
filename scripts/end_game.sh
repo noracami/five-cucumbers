@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 host=https://api.gaas.waterballsa.tw
+host=https://lobby.gaas.waterballsa.tw/api/internal
 roomId=$1
 WATERBALL_JWT=$token
 

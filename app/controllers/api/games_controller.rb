@@ -7,9 +7,11 @@ module Api
     end
 
     def create
-      Rails.logger.warn "Game params: #{params}"
       url = frontend_game_path(rand(1..100))
-      Rails.logger.warn "URL: #{url}"
+
+      Rails.logger.warn { "Game params: #{params}" }
+      Rails.logger.warn { "URL: #{url}" }
+
       render json: { url: },status: 201
       # game = Game.new(game_params)
       # if game.save
