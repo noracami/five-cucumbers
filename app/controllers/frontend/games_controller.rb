@@ -3,7 +3,15 @@ module Frontend
     before_action :set_game, only: %i(show previous_room next_room end_game)
     after_action :allow_iframe, only: %i(show)
 
-    def show; end
+    def show
+      token = params[:token]
+      @game.status ||= {}
+      @game.status["players"] ||= []
+      @game.status["players"] << token
+      @game.status["players"] = @game.status["players"].compact.uniq
+      @game.save
+      session[:token] ||= token
+    end
 
     def previous_room
       @game.status ||= {}

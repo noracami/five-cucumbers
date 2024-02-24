@@ -11,4 +11,5 @@
 <div>
   <%= link_to 'end game', frontend_game_end_game_path, data: { turbo_method: :get }, remote: true %>
 </div>
+<%= debug session[:token] %>
 <%= debug @game %>
