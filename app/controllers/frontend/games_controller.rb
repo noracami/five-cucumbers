@@ -39,7 +39,9 @@ module Frontend
       if res.status.in? 200..299
         render json: { status: "ok" }
       elsif res.body
-        render json: res.body.json, status: res.status
+        Rails.logger.error { res.body }
+        render json: { status: "error" }, status: res.status
+        # render json: res.body.json, status: res.status
       end
     end
 
