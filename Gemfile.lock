@@ -94,6 +94,9 @@ GEM
     globalid (1.2.1)
       activesupport (>= 6.1)
     htmlbeautifier (1.4.3)
+    http-2-next (1.0.3)
+    httpx (1.2.2)
+      http-2-next (>= 1.0.3)
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)
     importmap-rails (2.0.1)
@@ -248,6 +251,7 @@ DEPENDENCIES
   bootsnap
   debug
   htmlbeautifier
+  httpx (~> 1.2)
   importmap-rails
   jbuilder
   pg (~> 1.1)

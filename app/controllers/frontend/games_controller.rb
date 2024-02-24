@@ -5,12 +5,7 @@ module Frontend
 
     def show
       token = params[:token]
-      @game.status ||= {}
-      @game.status["players"] ||= []
-      @game.status["players"] << token
-      @game.status["players"] = @game.status["players"].compact.uniq
-      @game.save
-      session[:token] ||= token
+      session[:token] ||= token unless token.blank?
     end
 
     def previous_room
@@ -30,26 +25,22 @@ module Frontend
     end
 
     def end_game
-      # host = "https://lobby.gaas.waterballsa.tw/api/internal"
-      # url = "#{host}/rooms/#{$map[params[:id]][:roomId]}:endGame"
+      host = "https://lobby.gaas.waterballsa.tw/api/internal"
+      url = "#{host}/rooms/#{$map[params[:id]][:roomId]}:endGame"
 
-      @game.status ||= {}
-
-      cookies.each do |k, v|
-        @game.status["cookies"] ||= {}
-        next if @game.status["cookies"].key?(k)
-        @game.status["cookies"][k] = v
-      end
-
-      @game.save
-
-      # puts "start"
-      # puts request.headers['Authorization']
-      # puts "done"
-
-      render json: { status: "ok" }
       # send request to end game
-      # response = HTTParty.post(url, headers: { "Content-Type" => "application/json" })
+      res = HTTPX.post(
+        url,
+        headers: {
+          "Authorization" => "Bearer #{session[:token]}"
+        }
+      )
+
+      if res.status.in? 200..299
+        render json: { status: "ok" }
+      elsif res.body
+        render json: res.body.json, status: res.status
+      end
     end
 
     private

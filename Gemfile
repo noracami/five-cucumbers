@@ -57,3 +57,5 @@ group :development do
   gem "web-console"
   gem "htmlbeautifier", require: false
 end
+
+gem "httpx", "~> 1.2"
