@@ -7,18 +7,18 @@ module Api
     end
 
     def create
-      url = frontend_game_url(rand(1..100))
+      room_id = params.require(:game).fetch("roomId")
+      players = params.require(:game).fetch("players")
 
-      Rails.logger.warn { "Game params: #{params}" }
-      Rails.logger.warn { "URL: #{url}" }
+      game_id = SecureRandom.base36(8)
+      game_id = SecureRandom.base36(8) if $map.key?(game_id)
 
-      render json: { url: },status: 201
-      # game = Game.new(game_params)
-      # if game.save
-      #   render json: game
-      # else
-      #   render json: game.errors, status: 422
-      # end
+      $map[game_id] = {
+        roomId: room_id,
+        players: players
+      }
+
+      render json: { url: frontend_game_url(game_id) }, status: 201
     end
 
     private

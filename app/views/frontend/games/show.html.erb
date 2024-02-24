@@ -1,1 +1,14 @@
-<h1>Hello World <%= params[:id] %></h1>
+<h1 class="text-primary text-4xl">Hello World</h1>
+<div>
+  <p class="text-secondary text-2xl">GameId: <%= params[:id] %></p>
+</div>
+<div>
+  <%= link_to 'previous room', frontend_game_previous_room_path %>
+</div>
+<div>
+  <%= link_to 'next room', frontend_game_next_room_path %>
+</div>
+<div>
+  <%= link_to 'end game', frontend_game_end_game_path, data: { turbo_method: :get }, remote: true %>
+</div>
+<%= debug @data %>
