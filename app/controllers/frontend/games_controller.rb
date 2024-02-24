@@ -1,6 +1,6 @@
 module Frontend
   class GamesController < ApplicationController
-    after_filter :allow_iframe, only: %i(show)
+    after_action :allow_iframe, only: %i(show)
 
     def show
       Rails.logger.warn { "Frontend::GamesController#show #{params[:id]}" }
