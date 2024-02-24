@@ -38,7 +38,6 @@ module Frontend
       elsif res.body
         Rails.logger.error { res.body }
         render json: { status: "error" }, status: res.status
-        # render json: res.body.json, status: res.status
       end
     end
 
