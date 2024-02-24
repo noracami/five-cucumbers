@@ -2,7 +2,10 @@
 
 [![Deployed on Zeabur](https://zeabur.com/deployed-on-zeabur-dark.svg)](https://zeabur.com?referralCode=noracami&utm_source=noracami)
 
-https://gaas-five-cucumbers.zeabur.app/
+## TODO
+
+1. bind jwt and user info
+2. check cookie in iframe
 
 ### Integration Requirements
 
@@ -39,9 +42,9 @@ https://waterball.notion.site/v1-1-0-4020a50d26014f829492147af37db06f
 
 2. heartbeat api ✔️
 
-   - [x] GET /health
+   - [x] GET /api/health
 
-3. create game api 🚧
+3. create game api ✔️
 
 <details>
   <summary>request</summary>
@@ -91,6 +94,10 @@ https://waterball.notion.site/v1-1-0-4020a50d26014f829492147af37db06f
 
 5. get user info action 📝
 
-6. In frontend page, start game action 📝
+6. In frontend page, start game action 🚧
 
-7. end game action 📝
+7. end game action ✔️
+
+### endpoint
+
+https://gaas-five-cucumbers.zeabur.app/
