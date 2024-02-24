@@ -6,6 +6,9 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
   get "api/health" => "rails/health#show"
 
+  get "frontend/games/:id" => "frontend/games#show", as: :frontend_game
+  post "api/games" => "api/games#create"
+
   # Defines the root path route ("/")
   root "rails/health#show"
 end
