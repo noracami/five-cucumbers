@@ -26,7 +26,7 @@ module Frontend
 
     def end_game
       host = "https://lobby.gaas.waterballsa.tw/api/internal"
-      url = "#{host}/rooms/#{$map[params[:id]][:roomId]}:endGame"
+      url = "#{host}/rooms/#{@game.room_id}:endGame"
 
       # send request to end game
       res = HTTPX.post(
