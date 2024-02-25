@@ -98,6 +98,15 @@ https://waterball.notion.site/v1-1-0-4020a50d26014f829492147af37db06f
 
 7. end game action ✔️
 
+> [!IMPORTANT]
+> request body have to be explicitly empty
+
+```ruby
+url = 'https://api.gaas.waterballsa.tw'
+token = ANY_OF_GAME_PLAYER_JWT
+HTTPX.plugin(:auth).bearer_auth(token).post(url, body: '')
+```
+
 ### endpoint
 
 https://gaas-five-cucumbers.zeabur.app/

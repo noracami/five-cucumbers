@@ -25,14 +25,13 @@ module Frontend
     end
 
     def end_game
-      # host = "https://lobby.gaas.waterballsa.tw/api/internal"
       host = Rails.configuration.game_as_a_service[:backend_host]
       url = "#{host}/rooms/#{@game.room_id}:endGame"
 
+      # Rails.logger.warn { session[:token] }
+      # Rails.logger.warn { url }
       # send request to end game
-      Rails.logger.warn { session[:token] }
-      Rails.logger.warn { url }
-      res = HTTPX.plugin(:auth).bearer_auth(session[:token]).post(url)
+      res = HTTPX.plugin(:auth).bearer_auth(session[:token]).post(url, body: '')
 
       if res.status.in? 200..299
         render json: { status: "ok" }
