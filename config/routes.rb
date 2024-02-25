@@ -6,12 +6,20 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
   get "api/health" => "rails/health#show"
 
-  get "frontend/games/:id" => "frontend/games#show", as: :frontend_game
-  get "frontend/games/:id/previous_room" => "frontend/games#previous_room", as: :frontend_game_previous_room
-  get "frontend/games/:id/next_room" => "frontend/games#next_room", as: :frontend_game_next_room
-  get "frontend/games/:id/end_game" => "frontend/games#end_game", as: :frontend_game_end_game
-  post "api/games" => "api/games#create"
+  namespace "frontend" do
+    resources :games, only: %i(index show) do
+      member do
+        # get :previous_room
+        # get :next_room
+        post :end_game
+      end
+    end
+  end
+
+  namespace "api" do
+    resources :games, only: %i(create)
+  end
 
   # Defines the root path route ("/")
-  root "rails/health#show"
+  root "frontend/games#index"
 end

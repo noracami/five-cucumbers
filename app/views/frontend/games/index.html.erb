@@ -1,0 +1,15 @@
+<h1 class="text-primary text-4xl text-center">Five Cucumbers</h1>
+<div>
+  <p class="text-secondary text-2xl">Now playing</p>
+  <%= debug @games %>
+  <div class="flex gap-10 p-10">
+    <% @games.each do |game| %>
+      <div class="border-secondary border-2 p-5">
+        <p class="text-secondary text-2xl">GameId: <%= game.id %></p>
+      </div>
+    <% end %>
+  </div>
+</div>
+<div>
+  <%= link_to 'end game', end_game_frontend_game_path(1), data: { turbo_method: :get }, remote: true %>
+</div>

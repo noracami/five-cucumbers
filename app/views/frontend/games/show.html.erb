@@ -3,13 +3,7 @@
   <p class="text-secondary text-2xl">GameId: <%= params[:id] %></p>
 </div>
 <div>
-  <%= link_to 'previous room', frontend_game_previous_room_path %>
-</div>
-<div>
-  <%= link_to 'next room', frontend_game_next_room_path %>
-</div>
-<div>
-  <%= link_to 'end game', frontend_game_end_game_path, data: { turbo_method: :get }, remote: true %>
+  <%= link_to 'end game', end_game_frontend_game_path, data: { turbo_method: :post }, remote: true %>
 </div>
 <%= debug session[:token] %>
 <%= debug @game %>

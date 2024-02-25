@@ -3,6 +3,10 @@ module Frontend
     before_action :set_game, only: %i(show previous_room next_room end_game)
     after_action :allow_iframe, only: %i(show)
 
+    def index
+      @games = Game.playing.order(updated_at: :desc).limit(10)
+    end
+
     def show
       session[:token] = params[:token] if params[:token] && Auth0Client.validate_token(params[:token]).error.nil?
     end
@@ -27,8 +31,6 @@ module Frontend
       host = Rails.configuration.game_as_a_service.backend_host
       url = "#{host}/rooms/#{@game.room_id}:endGame"
 
-      # Rails.logger.warn { session[:token] }
-      # Rails.logger.warn { url }
       # send request to end game
       res = HTTPX.plugin(:auth).bearer_auth(session[:token]).post(url, body: '')
 
@@ -41,6 +43,7 @@ module Frontend
     end
 
     private
+
     def allow_iframe
       response.headers.delete "X-Frame-Options"
     end
