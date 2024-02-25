@@ -59,3 +59,5 @@ group :development do
 end
 
 gem "httpx", "~> 1.2"
+
+gem "jwt", "~> 2.8"

@@ -4,8 +4,7 @@ module Frontend
     after_action :allow_iframe, only: %i(show)
 
     def show
-      token = params[:token]
-      session[:token] ||= token unless token.blank?
+      session[:token] = params[:token] if params[:token] && Auth0Client.validate_token(params[:token]).error.nil?
     end
 
     def previous_room
@@ -25,7 +24,7 @@ module Frontend
     end
 
     def end_game
-      host = Rails.configuration.game_as_a_service[:backend_host]
+      host = Rails.configuration.game_as_a_service.backend_host
       url = "#{host}/rooms/#{@game.room_id}:endGame"
 
       # Rails.logger.warn { session[:token] }

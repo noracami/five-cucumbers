@@ -44,5 +44,6 @@ module FiveCucumbers
     config.action_dispatch.cookies_same_site_protection = :none
 
     config.game_as_a_service = config_for(:gaas_lobby_platform_service)
+    config.auth0 = config_for(:auth0)
   end
 end

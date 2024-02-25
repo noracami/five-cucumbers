@@ -1,0 +1,11 @@
+default: &default
+  domain: <%= ENV.fetch('AUTH0_DOMAIN') { 'https://dev-1l0ixjw8yohsluoi.us.auth0.com/' } %>
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default
