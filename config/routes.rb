@@ -20,6 +20,10 @@ Rails.application.routes.draw do
     resources :games, only: %i(create)
   end
 
+  namespace "admin" do
+    resources :games, only: %i(create)
+  end
+
   # Defines the root path route ("/")
   root "frontend/games#index"
 end

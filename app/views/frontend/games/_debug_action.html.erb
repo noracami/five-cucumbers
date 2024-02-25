@@ -1,0 +1,9 @@
+<div class="text-center">
+  <h1 class="text-red-500 text-2xl">DEV Action</h1>
+  <div class="flex gap-10 p-5 justify-center">
+    <%= link_to 'start game',
+        admin_games_path,
+        class: 'button button-red',
+        data: { turbo_method: :post } %>
+  </div>
+</div>

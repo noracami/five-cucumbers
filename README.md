@@ -2,23 +2,22 @@
 
 [![Deployed on Zeabur](https://zeabur.com/deployed-on-zeabur-dark.svg)](https://zeabur.com?referralCode=noracami&utm_source=noracami)
 
-## TODO
+## Introduction
 
-1. bind jwt and user info
-2. check cookie in iframe
+This is a web game service for the game "Five Cucumbers".
 
-### Integration Requirements
+Integrate with the GAAS(Game As A Service) platform. link: https://lobby.gaas.waterballsa.tw/
+
+## Integration Requirements
 
 大平台出版整合文件
 
 https://waterball.notion.site/v1-1-0-4020a50d26014f829492147af37db06f
 
-1. register game ✔️
-
-   - [x] register game
+1. 到大平台註冊遊戲 ✔️
 
 <details>
-  <summary>request</summary>
+  <summary>▶︎ example</summary>
 
 ```json
 // POST /games
@@ -40,14 +39,16 @@ https://waterball.notion.site/v1-1-0-4020a50d26014f829492147af37db06f
 
 </details>
 
-2. heartbeat api ✔️
+2. 遊戲後端實作「心跳」API ✔️
 
-   - [x] GET /api/health
+3. 遊戲後端實作「開始遊戲」API ✔️
 
-3. create game api ✔️
+   > 輸入：房間 ID、玩家資訊
+   > 輸出：遊戲連結(提供給 IFrame 顯示遊戲畫面)
+   > Detail see below
 
 <details>
-  <summary>request</summary>
+  <summary>▶︎ request</summary>
 
 ```json
 // POST /games
@@ -80,7 +81,7 @@ https://waterball.notion.site/v1-1-0-4020a50d26014f829492147af37db06f
 </details>
 
 <details>
-  <summary>response</summary>
+  <summary>▶︎ response</summary>
 
 ```json
 {
@@ -90,16 +91,27 @@ https://waterball.notion.site/v1-1-0-4020a50d26014f829492147af37db06f
 
 </details>
 
-4. JWT Authorization 📝
+4. 實作 JWT 驗證 ✔️
 
-5. get user info action 📝
+   > use auth0 SDK to verify jwt
+   > https://auth0.com/docs/quickstart/backend/rails/interactive
 
-6. In frontend page, start game action 🚧
+5. 呼叫大平台 API `GET /users/me` 📝
 
-7. end game action ✔️
+   > 透過大平台的 JWT 取得玩家資訊（例如：暱稱、頭像）
+
+6. 遊戲前端實作「開始遊戲」頁面 🚧
+
+   > 玩家會透過 IFrame 訪問 `3. 開始遊戲` API 回傳的 URL，加上 `?jwt={玩家的 JWT}` 參數
+   > 遊戲後端藉由 JWT 判斷玩家身份
+
+7. 遊戲後端實作「結束遊戲」API ✔️
+
+<details>
+  <summary>▶︎ request</summary>
 
 > [!IMPORTANT]
-> request body have to be explicitly empty
+> request body must be explicitly empty
 
 ```ruby
 url = 'https://api.gaas.waterballsa.tw'
@@ -107,6 +119,13 @@ token = ANY_OF_GAME_PLAYER_JWT
 HTTPX.plugin(:auth).bearer_auth(token).post(url, body: '')
 ```
 
-### endpoint
+</details>
+
+## backlog
+
+1. bind jwt and user info
+2. check cookie in iframe
+
+## endpoint
 
 https://gaas-five-cucumbers.zeabur.app/

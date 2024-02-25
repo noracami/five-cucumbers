@@ -7,4 +7,8 @@ class Game < ApplicationRecord
   }, _prefix: true
 
   scope :playing, -> { where.not(state: :ended) }
+
+  # def players
+  #   status['players']
+  # end
 end

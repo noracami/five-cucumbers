@@ -1,15 +1,25 @@
 <h1 class="text-primary text-4xl text-center">Five Cucumbers</h1>
+<%= render 'debug_action' if Rails.env.development? %>
 <div>
   <p class="text-secondary text-2xl">Now playing</p>
-  <%= debug @games %>
-  <div class="flex gap-10 p-10">
+  <%= debug @games if false %>
+  <div class="flex gap-10 p-5">
     <% @games.each do |game| %>
-      <div class="border-secondary border-2 p-5">
-        <p class="text-secondary text-2xl">GameId: <%= game.id %></p>
+      <div class="text-secondary text-2xl border-secondary border-2 p-5">
+        <p><%= game.state %></p>
+        <p>ID: <%= game.uuid %></p>
+        <p>roomId: <%= game.room_id %></p>
+        <p>players: <%= game.players.count %></p>
+        <p>last update: <%= game.updated_at.to_time %></p>
+        <div class="flex justify-between">
+          <%= link_to 'Preview',
+              frontend_game_path(game.uuid),
+              class: 'button bg-primary text-background hover:opacity-80' %>
+          <%= link_to 'Join',
+              frontend_game_path(game.uuid),
+              class: 'button bg-blue-700 text-background hover:opacity-80' %>
+        </div>
       </div>
     <% end %>
   </div>
-</div>
-<div>
-  <%= link_to 'end game', end_game_frontend_game_path(1), data: { turbo_method: :get }, remote: true %>
 </div>

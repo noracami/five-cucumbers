@@ -1,9 +1,23 @@
-<h1 class="text-primary text-4xl">Hello World</h1>
-<div>
-  <p class="text-secondary text-2xl">GameId: <%= params[:id] %></p>
+<h1 class="text-primary text-4xl">Game ID <%= params[:id] %></h1>
+<div class="text-secondary text-2xl">
+  <p><%= @game.state %></p>
+  <p>roomId: <%= @game.room_id %></p>
+  <% @game.players.each do |player| %>
+    <p><%= player["nickname"] %></p>
+  <% end %>
+  <p>last update: <%= @game.updated_at.to_time %></p>
+  <p>rounds</p>
 </div>
 <div>
-  <%= link_to 'end game', end_game_frontend_game_path, data: { turbo_method: :post }, remote: true %>
+  <%= link_to '結束遊戲',
+      end_game_frontend_game_path,
+      class: 'button bg-red-600 text-background hover:opacity-80',
+      data: { turbo_method: :post },
+      remote: true %>
 </div>
-<%= debug session[:token] %>
-<%= debug @game %>
+<hr>
+<div class="bg-slate-800 p-2 m-2 text-yellow-300">
+  This game is currently in development.
+  You can check the <%= link_to 'repo', 'https://github.com/noracami/five-cucumbers', target: '_blank', class: 'text-blue-500 underline' %> for the latest updates.
+  Click '結束遊戲' to end the game.
+</div>
