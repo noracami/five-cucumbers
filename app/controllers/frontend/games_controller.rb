@@ -25,7 +25,8 @@ module Frontend
     end
 
     def end_game
-      host = "https://lobby.gaas.waterballsa.tw/api/internal"
+      # host = "https://lobby.gaas.waterballsa.tw/api/internal"
+      host = Rails.configuration.game_as_a_service[:backend_host]
       url = "#{host}/rooms/#{@game.room_id}:endGame"
 
       # send request to end game

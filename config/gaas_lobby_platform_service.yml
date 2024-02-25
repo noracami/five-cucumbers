@@ -1,0 +1,11 @@
+default: &default # "https://lobby.gaas.waterballsa.tw/api/internal"
+  backend_host: <%= ENV.fetch('LOBBY_BACKEND_HOST') { 'https://api.gaas.waterballsa.tw' } %>
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default
