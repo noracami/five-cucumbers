@@ -1,0 +1,41 @@
+<%= turbo_stream_from dom_id(game) %>
+<div id="<%= dom_id game %>">
+  <h1 class="text-primary text-4xl">Game ID <%= game.uuid %></h1>
+  <div class="text-secondary text-2xl">
+    <p><%= game.state %></p>
+    <p>roomId: <%= game.room_id %></p>
+    <% game.players.each do |player| %>
+      <p><%= player["nickname"] %></p>
+    <% end %>
+    <p>last update: <%= game.updated_at.to_time %></p>
+    <p>rounds</p>
+  </div>
+  <div class="flex">
+    <% if game.state_completed? %>
+      <div class="button bg-red-800 text-background cursor-not-allowed">結束遊戲</div>
+      <div class="button bg-blue-800 text-background cursor-not-allowed">Next State</div>
+    <% else %>
+      <%= link_to '結束遊戲',
+        end_game_frontend_game_path(game.uuid),
+        class: 'button bg-red-600 text-background hover:opacity-80',
+        data: { turbo_method: :post },
+        remote: true %>
+      <%= link_to 'Next State',
+        next_state_frontend_game_path(game.uuid),
+        class: 'button bg-blue-600 text-background hover:opacity-80',
+        data: { turbo_method: :post },
+        remote: true %>
+    <% end %>
+    <%= link_to '返回首頁',
+      root_path,
+      class: 'button bg-white text-background hover:opacity-80',
+      data: { turbo_method: :get },
+      remote: true if Rails.env.development? %>
+  </div>
+  <hr>
+  <div class="bg-slate-800 p-2 m-2 text-yellow-300">
+    This game is currently in development.
+    You can check the <%= link_to 'repo', 'https://github.com/noracami/five-cucumbers', target: '_blank', class: 'text-blue-500 underline' %> for the latest updates.
+    Click '結束遊戲' to end the game.
+  </div>
+</div>

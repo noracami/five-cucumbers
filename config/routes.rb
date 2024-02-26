@@ -12,6 +12,7 @@ Rails.application.routes.draw do
         # get :previous_room
         # get :next_room
         post :end_game
+        post :next_state
       end
     end
   end
