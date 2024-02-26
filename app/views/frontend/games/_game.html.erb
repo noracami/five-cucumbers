@@ -5,7 +5,7 @@
     <p><%= game.state %></p>
     <p>roomId: <%= game.room_id %></p>
     <% game.players.each do |player| %>
-      <p><%= player["nickname"] %></p>
+      <p><%= player["nickName"] %> <span class="text-purple-500"><%= player["id"] %></span></p>
     <% end %>
     <p>last update: <%= game.updated_at.to_time %></p>
     <p>rounds</p>
