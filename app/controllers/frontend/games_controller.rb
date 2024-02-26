@@ -23,6 +23,7 @@ module Frontend
         else
           Rails.logger.error { res.body.to_s }
         end
+      end
     end
 
     def previous_room
