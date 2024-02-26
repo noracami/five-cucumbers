@@ -31,6 +31,13 @@ module Frontend
       return render json: { status: "no next state" } if @game.state == "completed"
 
       @game.update!(state: Game.states[@game.state] + 1)
+
+      if @game.state == "completed" && Rails.env.production?
+        # send request to end game
+        send_end_game_request_to_gaas
+        return render json: { status: "ok" }
+      end
+
       Turbo::StreamsChannel.broadcast_update_to(
         "game_#{@game.id}",
         target: "game_#{@game.id}",
@@ -39,13 +46,12 @@ module Frontend
       )
       render json: { status: "ok" }
     end
+
     def end_game
       if Rails.env.production?
-        host = Rails.configuration.game_as_a_service.backend_host
-        url = "#{host}/rooms/#{@game.room_id}:endGame"
 
         # send request to end game
-        res = HTTPX.plugin(:auth).bearer_auth(session[:token]).post(url, body: '')
+        res = send_end_game_request_to_gaas
 
         if res.status.in? 200..299
           @game.state_completed!
@@ -76,6 +82,13 @@ module Frontend
 
     def set_game
       @game = Game.find_by!(uuid: params[:id])
+    end
+
+    def send_end_game_request_to_gaas
+      host = Rails.configuration.game_as_a_service.backend_host
+      url = "#{host}/rooms/#{@game.room_id}:endGame"
+
+      HTTPX.plugin(:auth).bearer_auth(session[:token]).post(url, body: '')
     end
   end
 end
