@@ -4,6 +4,9 @@
   <div class="text-secondary text-2xl">
     <p><%= game.state %></p>
     <p>roomId: <%= game.room_id %></p>
+    <div class="border border-white p-5">
+      <p>Me: <span class="text-pink-500"><%= session[:user_info][:id] %></span></p>
+    </div>
     <% game.players.each do |player| %>
       <p><%= player["nickName"] %> <span class="text-purple-500"><%= player["id"] %></span></p>
     <% end %>

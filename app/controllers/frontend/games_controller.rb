@@ -8,7 +8,21 @@ module Frontend
     end
 
     def show
-      session[:token] = params[:token] if params[:token] && Auth0Client.validate_token(params[:token]).error.nil?
+      if params[:token] && Auth0Client.validate_token(params[:token]).error.nil?
+        # save token in session
+        session[:token] = params[:token]
+
+        # save user in session
+        # user info is fetch at GET gaas/users/me
+        url = "#{Rails.configuration.game_as_a_service.backend_host}/users/me"
+        res = HTTPX.plugin(:auth).bearer_auth(session[:token]).get(url)
+
+        if res.status.in? 200..299
+          session[:user_info] = {}
+          res.json.each { |k, v| session[:user_info][k.to_sym] = v }
+        else
+          Rails.logger.error { res.body.to_s }
+        end
     end
 
     def previous_room
