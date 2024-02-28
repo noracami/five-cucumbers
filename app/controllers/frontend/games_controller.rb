@@ -124,10 +124,14 @@ module Frontend
           # render json: { status: "ok" }
         elsif res.headers['content-type'] == 'application/json'
           Rails.logger.error { res.json }
-          render json: { status: res.json }, status: res.status
+          pp "response is json"
+          pp res
+          return render json: { status: res.json }, status: res.status
         else
           Rails.logger.error { res.body.to_s }
-          render json: { status: "error" }, status: res.status
+          pp "response is not json"
+          pp res
+          return render json: { status: "error" }, status: res.status
         end
       end
 
