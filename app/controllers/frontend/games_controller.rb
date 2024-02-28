@@ -168,6 +168,9 @@ module Frontend
       host = Rails.configuration.game_as_a_service.backend_host
       url = "#{host}/rooms/#{@game.room_id}:endGame"
 
+      Rails.logger.warn { "token: #{session[:token]}" }
+      pp session.keys
+
       HTTPX.plugin(:auth).bearer_auth(session[:token]).post(url, body: '')
     end
   end
