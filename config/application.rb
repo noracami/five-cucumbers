@@ -41,7 +41,7 @@ module FiveCucumbers
 
     # In order for your session cookie to work inside of an iframe, you need to explicitly set its SameSite setting to None.
     # https://stackoverflow.com/questions/69652408/sessions-of-rails-app-loaded-in-iframe-no-working
-    config.action_dispatch.cookies_same_site_protection = :none
+    # config.action_dispatch.cookies_same_site_protection = :none
 
     config.game_as_a_service = config_for(:gaas_lobby_platform_service)
     config.auth0 = config_for(:auth0)

@@ -15,6 +15,22 @@ module Api
 
       game = Game.create!(uuid: game_id, room_id: room_id, players: players)
 
+      $redis.lpush(
+        "game:#{game_id}",
+        {
+          event: "game_created",
+          data: {
+            game_id: game_id,
+            room_id: room_id,
+            players: players
+          },
+          time: game.created_at,
+          ex: 1.hour.from_now
+        }.to_json
+      )
+
+      game.deal_cards
+
       render json: { url: frontend_game_url(game_id) }, status: 201
     end
 

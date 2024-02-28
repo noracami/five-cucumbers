@@ -1,1 +1,27 @@
-<%= render 'game', game: @game %>
+<% game = @game %>
+<%= turbo_stream_from dom_id(game) %>
+<% my_cucumbers = rand(1..5) %>
+<div>
+  <%= render 'room_info', game: %>
+  <section class="card-mono">
+    <header class="p-2 text-secondary">MY STATUS</header>
+    <%= render 'self_status', cucumbers: my_cucumbers %>
+  </section>
+  <section class="card-mono">
+    <header class="p-2 text-secondary">ACTIONS</header>
+    <%= render 'actions', game:, cards: game.player_cards(session.dig("user_info", "id")) %>
+  </section>
+  <section class="card-mono">
+    <header class="p-2 text-secondary">GAME STATE</header>
+    <%= render 'game_state', game: @game %>
+  </section>
+  <div class="p-2 bg-slate-800 text-yellow-300">
+    <div>
+      This game is currently in development.
+      You can check the <%= link_to 'repo', 'https://github.com/noracami/five-cucumbers', target: '_blank', class: 'text-blue-500 underline' %> for the latest updates.
+    </div>
+    <div>
+      <a href="https://www.flaticon.com/free-icons/cucumber" title="cucumber icons" target="_blank" class="underline">Cucumber icons created by kerismaker - Flaticon</a>
+    </div>
+  </div>
+</div>

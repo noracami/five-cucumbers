@@ -13,6 +13,7 @@ Rails.application.routes.draw do
         # get :next_room
         post :end_game
         post :next_state
+        post "play/:card" => "games#play_card", as: "play_card"
       end
     end
   end

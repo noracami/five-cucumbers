@@ -1,0 +1,38 @@
+<div id=<%= dom_id game, :game_state %> class="p-2 text-secondary text-2xl">
+  <p>Game State: <%= game.state %></p>
+  <div class="grid grid-cols-7">
+    <div class="col-span-4">
+      <p>Player:</p>
+      <% game.players.each do |player| %>
+        <div class="mb-2 px-8">
+          <% if session.dig("user_info", "id") == player["id"] %>
+            <div class="flex justify-between items-center gap-4 text-pink-500">
+            <% else %>
+              <div class="flex justify-between items-center gap-4 text-purple-500">
+              <% end %>
+              <span><%= player["nickName"] %></span>
+              <span><%= player["id"] %></span>
+            </div>
+            <div class="flex">
+              <% random_num = rand(1..5) %>
+              <% (1..5).each do |i| %>
+                <% if i <= random_num %>
+                  <img src="/cucumber.png" alt="" sizes="64px" class="w-16">
+                <% else %>
+                  <img src="/cucumber.png" alt="" sizes="64px" class="w-16 grayscale">
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <div class="col-span-3 text-lg">
+        <p>Events (Last 10)</p>
+        <% game.last_events.each do |event, time, data| %>
+          <p><%= event %></p>
+          <p><%= data %></p>
+          <p><%= "-- #{time.strftime("%T.%3N")}" %></p>
+        <% end %>
+      </div>
+    </div>
+  </div>

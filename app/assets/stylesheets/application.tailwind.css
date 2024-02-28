@@ -12,8 +12,12 @@
 
 */
 
+.card-mono {
+  @apply mb-5 font-mono border border-white rounded-lg;
+}
+
 .button {
-  @apply m-4 py-2 px-4 flex justify-center items-center w-40 text-center text-base font-semibold rounded-lg;
+  @apply m-4 py-2 px-4 flex justify-center items-center text-center text-base font-semibold rounded-lg;
 }
 
 .button-red {

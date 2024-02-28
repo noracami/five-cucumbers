@@ -1,6 +1,8 @@
 module Frontend
   class GamesController < ApplicationController
-    before_action :set_game, only: %i(show previous_room next_room next_state end_game)
+    skip_before_action :verify_authenticity_token, only: %i(show next_state end_game)
+
+    before_action :set_game, only: %i(show play_card next_state end_game)
     after_action :allow_iframe, only: %i(show)
 
     def index
@@ -8,38 +10,85 @@ module Frontend
     end
 
     def show
-      if params[:token] && Auth0Client.validate_token(params[:token]).error.nil?
-        # save token in session
-        session[:token] = params[:token]
-
-        # save user in session
-        # user info is fetch at GET gaas/users/me
-        url = "#{Rails.configuration.game_as_a_service.backend_host}/users/me"
-        res = HTTPX.plugin(:auth).bearer_auth(session[:token]).get(url)
-
-        if res.status.in? 200..299
+      if params[:token].present?
+        if Rails.env.development?
+          user_info = JSON.parse(Base64.urlsafe_decode64(params[:token]))
           session[:user_info] = {}
-          res.json.each { |k, v| session[:user_info][k.to_sym] = v }
-        else
-          Rails.logger.error { res.body.to_s }
+          user_info.each { |k, v| session[:user_info][k.to_sym] = v }
+          $redis.lpush(
+            "game:#{@game.uuid}",
+            {
+              event: "user_joined(local)",
+              data: {user: "local"},
+              time: Time.current,
+            }.to_json
+          )
+        elsif Rails.env.production? && Auth0Client.validate_token(params[:token]).error.nil?
+
+          # save token in session
+          session[:token] = params[:token]
+          # save user in session
+          # user info is fetch at GET gaas/users/me
+          url = "#{Rails.configuration.game_as_a_service.backend_host}/users/me"
+          res = HTTPX.plugin(:auth).bearer_auth(session[:token]).get(url)
+
+          if res.status.in? 200..299
+            session[:user_info] = {}
+            res.json.each { |k, v| session[:user_info][k.to_sym] = v }
+            $redis.lpush(
+              "game:#{@game.uuid}",
+              {
+                event: "user_joined",
+                data: {user: session[:user_info][:nickname]},
+                time: Time.current,
+              }.to_json
+            )
+          else
+            Rails.logger.error { res.body.to_s }
+          end
         end
+
+        redirect_to frontend_game_path
       end
     end
 
-    def previous_room
-      @game.status ||= {}
-      @game.status["previous_room"] ||= 0
-      @game.status["previous_room"] += 1
-      @game.save
-      redirect_to frontend_game_path
-    end
-
-    def next_room
-      @game.status ||= {}
-      @game.status["next_room"] ||= 0
-      @game.status["next_room"] += 1
-      @game.save
-      redirect_to frontend_game_path
+    def play_card
+      card = params[:card]
+      # @game.play_card(card)
+      cards = $redis.lpop("game:#{@game.uuid}:cards:#{session[:user_info]["id"]}", 7)
+      if (card_idx = cards.index(card))
+        cards.delete_at(card_idx)
+        $redis.lpush(
+          "game:#{@game.uuid}",
+          {
+            event: "card_played",
+            data: {session[:user_info]["id"] => card},
+            time: Time.current,
+          }.to_json
+        )
+        $redis.lpush("game:#{@game.uuid}:cards:#{session[:user_info]["id"]}", cards) if cards.present?
+        Turbo::StreamsChannel.broadcast_update_to(
+          "game_#{@game.id}",
+          target: "actions_#{session[:user_info]["id"]}",
+          partial: "frontend/games/actions",
+          locals: { game: @game, cards: }
+        )
+      else
+        $redis.lpush(
+          "game:#{@game.uuid}",
+          {
+            event: "card_played",
+            data: {session[:user_info]["id"] => "invalid"},
+            time: Time.current,
+          }.to_json
+        )
+      end
+      Turbo::StreamsChannel.broadcast_update_to(
+        "game_#{@game.id}",
+        target: "game_state_game_#{@game.id}",
+        partial: "frontend/games/game_state",
+        locals: { game: @game }
+      )
     end
 
     def next_state
@@ -55,11 +104,12 @@ module Frontend
 
       Turbo::StreamsChannel.broadcast_update_to(
         "game_#{@game.id}",
-        target: "game_#{@game.id}",
-        partial: "frontend/games/game",
-        locals: { game: @game }
+        target: "game_state_#{@game.id}",
+        partial: "frontend/games/game_state",
+        locals: { game: @game, random_num: rand(1..5) }
       )
-      render json: { status: "ok" }
+      # redirect_to frontend_game_path
+      render json: { status: "ok" }, status: 303
     end
 
     def end_game
@@ -69,9 +119,9 @@ module Frontend
         res = send_end_game_request_to_gaas
 
         if res.status.in? 200..299
-          @game.state_completed!
+          # @game.state_completed!
 
-          render json: { status: "ok" }
+          # render json: { status: "ok" }
         elsif res.headers['content-type'] == 'application/json'
           Rails.logger.error { res.json }
           render json: { status: res.json }, status: res.status
@@ -79,14 +129,25 @@ module Frontend
           Rails.logger.error { res.body.to_s }
           render json: { status: "error" }, status: res.status
         end
-      else
-        @game.state_completed!
-        Turbo::StreamsChannel.broadcast_update_to("game_#{@game.id}",
-                                                  target: "game_#{@game.id}",
-                                                  partial: "frontend/games/game",
-                                                  locals: { game: @game })
-        render json: { status: "ok" }
       end
+
+      @game.state_completed!
+      $redis.lpush(
+        "game:#{@game.uuid}",
+        {
+          event: "game_ended",
+          data: {},
+          time: @game.updated_at,
+        }.to_json
+      )
+      @game.update!(game_logs: $redis.lrange("game:#{@game.uuid}", 0, -1).to_json)
+      Turbo::StreamsChannel.broadcast_update_to(
+        "game_#{@game.id}",
+        target: "game_state_game_#{@game.id}",
+        partial: "frontend/games/game_state",
+        locals: { game: @game, random_num: rand(1..5) }
+      )
+      redirect_to frontend_game_path
     end
 
     private
