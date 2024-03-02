@@ -155,7 +155,7 @@ https://waterball.notion.site/v1-1-0-4020a50d26014f829492147af37db06f
 
 ### 5. 呼叫大平台 API `GET /users/me` 📝
 
-> 透過大平台的 JWT 取得玩家資訊（例如：暱稱、頭像）
+> 透過大平台的 JWT 取得玩家資訊（例如：暱稱、id）
 
 ### 6. 遊戲前端實作「開始遊戲」頁面 🚧
 
@@ -164,11 +164,11 @@ https://waterball.notion.site/v1-1-0-4020a50d26014f829492147af37db06f
 
 ### 7. 遊戲後端實作「結束遊戲」API ✔️
 
-<details>
-  <summary>▶︎ request</summary>
-
 > [!IMPORTANT]
 > request body must be explicitly empty
+
+<details>
+  <summary>▶︎ request</summary>
 
 ```ruby
 url = 'https://api.gaas.waterballsa.tw'

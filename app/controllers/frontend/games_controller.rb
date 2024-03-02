@@ -167,10 +167,6 @@ module Frontend
     def send_end_game_request_to_gaas
       host = Rails.configuration.game_as_a_service.backend_host
       url = "#{host}/rooms/#{@game.room_id}:endGame"
-
-      Rails.logger.warn { "token: #{session[:token]}" }
-      pp session.keys
-
       HTTPX.plugin(:auth).bearer_auth(session[:token]).post(url, body: '')
     end
   end
