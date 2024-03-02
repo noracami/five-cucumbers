@@ -1,23 +1,27 @@
-<div id=<%= "actions_#{session.dig("user_info", "id")}" %> class="flex">
-  <% if game.state_completed? %>
-    <div class="button bg-red-800 text-background cursor-not-allowed">結束遊戲</div>
-    <div class="button bg-blue-800 text-background cursor-not-allowed">Next State</div>
-  <% else %>
-    <%= link_to '結束遊戲',
+<div class="flex">
+  <div id=<%= "actions_#{session.dig("user_info", "id")}" %> class="flex">
+    <% if game.state_completed? %>
+      <div class="button bg-red-800 text-background cursor-not-allowed">結束遊戲</div>
+    <% else %>
+      <%= link_to '結束遊戲',
         end_game_frontend_game_path(game.uuid),
         class: 'button bg-red-600 text-background hover:opacity-80',
         data: { turbo_method: :post } %>
-    <%= link_to 'Next State',
-        next_state_frontend_game_path(game.uuid),
-        class: 'button bg-blue-600 text-background hover:opacity-80',
-        data: { turbo_method: :post } %>
-  <% end %>
-  <% cards.each do |card| %>
-    <%= button_to "#{card}", play_card_frontend_game_path(game.uuid, card:), turbo_method: :post, class: 'button w-12 bg-white text-background' %>
-  <% end %>
-  <%= link_to '返回首頁',
+    <% end %>
+    <%= link_to '返回首頁',
       root_path,
       class: 'button bg-white text-background hover:opacity-80',
       data: { turbo_method: :get },
       remote: true if Rails.env.development? %>
+    <div class="flex items-center">
+      <% cards.each do |card| %>
+        <%= button_to "#{card}", play_card_frontend_game_path(game.uuid, card:), turbo_method: :post, class: 'button w-12 bg-white text-background' %>
+      <% end %>
+      <% if is_your_turn %>
+        <p class="text-blue-500 animate-bounce">輪到你了</p>
+      <% else %>
+        <p class="text-red-500">waiting</p>
+      <% end %>
+    </div>
+  </div>
 </div>

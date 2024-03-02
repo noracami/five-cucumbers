@@ -5,15 +5,19 @@
   <%= render 'room_info', game: %>
   <section class="card-mono">
     <header class="p-2 text-secondary">MY STATUS</header>
-    <%= render 'self_status', cucumbers: my_cucumbers %>
+    <div class="p-2 text-primary text-2xl">
+      <p>Nickname: <span class="text-pink-500"><%= session.dig("user_info", "nickname") %></span></p>
+      <p>ID: <span class="text-pink-500"><%= session.dig("user_info", "id") %></span></p>
+      <%= render 'self_status', cucumbers: my_cucumbers %>
+    </div>
   </section>
   <section class="card-mono">
     <header class="p-2 text-secondary">ACTIONS</header>
-    <%= render 'actions', game:, cards: game.player_cards(session.dig("user_info", "id")) %>
+    <%= render 'actions', game:, cards: game.player_cards(session.dig("user_info", "id")), is_your_turn: %>
   </section>
   <section class="card-mono">
     <header class="p-2 text-secondary">GAME STATE</header>
-    <%= render 'game_state', game: @game %>
+    <%= render 'game_state', game: %>
   </section>
   <div class="p-2 bg-slate-800 text-yellow-300">
     <div>

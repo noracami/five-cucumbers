@@ -8,16 +8,12 @@ class Game < ApplicationRecord
 
   scope :playing, -> { where.not(state: :completed) }
 
+  after_create do
+    $redis.set "game:#{uuid}:current_player_position", 0, ex: 1.hour.from_now
+    GameJob::DealJob.perform_now(self)
+  end
+
   def last_events(limit: 10)
-    # events.order(created_at: :desc).limit(limit)
-    # mock events
-    # [
-    #   { id: 1, name: "event 1", created_at: Time.current },
-    #   { id: 2, name: "event 2", created_at: Time.current },
-    #   { id: 3, name: "event 3", created_at: Time.current },
-    #   { id: 4, name: "event 4", created_at: Time.current },
-    #   { id: 5, name: "event 5", created_at: Time.current }
-    # ].map(&:values)
     $redis.lrange("game:#{uuid}", 0, limit).map do |event|
       hash = JSON.parse(event)
       ret = []

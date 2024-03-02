@@ -7,8 +7,7 @@ module Admin
       me = {id: SecureRandom.base36(24), nickname: 'Me', email: 'dev@cucumbers.io'}
       user_info = {nickname: me[:nickname], email: me[:email], id: me[:id]}
       players = [{id: me[:id], nickName: me[:nickname]}]
-      # players = [{id: SecureRandom.base36(24), nickname: 'Me'}]
-      3.times { players << {id: SecureRandom.base36(24), nickName: Faker::Name.first_name} }
+      3.times { players << {id: SecureRandom.base36(24), nickName: Faker::Name.first_name, isAI: true} }
 
       game_id = SecureRandom.base36(8)
       game_id = SecureRandom.base36(8) while Game.exists?(uuid: game_id)
@@ -27,8 +26,6 @@ module Admin
           ex: 1.hour.from_now
         }.to_json
       )
-
-      game.deal_cards
 
       redirect_to frontend_game_url(game_id, token: Base64.urlsafe_encode64(user_info.to_json))
     end

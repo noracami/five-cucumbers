@@ -5,6 +5,8 @@ module Frontend
     before_action :set_game, only: %i(show play_card next_state end_game)
     after_action :allow_iframe, only: %i(show)
 
+    helper_method :is_your_turn
+
     def index
       @games = Game.playing.order(updated_at: :desc).limit(10)
     end
@@ -48,31 +50,40 @@ module Frontend
           end
         end
 
-        redirect_to frontend_game_path
+        return redirect_to frontend_game_path
       end
     end
 
     def play_card
+      current_player = session[:user_info]
       card = params[:card]
-      # @game.play_card(card)
-      cards = $redis.lpop("game:#{@game.uuid}:cards:#{session[:user_info]["id"]}", 7)
+      cards = $redis.lrange("game:#{@game.uuid}:cards:#{current_player["id"]}", 0, -1)
       if (card_idx = cards.index(card))
-        cards.delete_at(card_idx)
-        $redis.lpush(
-          "game:#{@game.uuid}",
-          {
-            event: "card_played",
-            data: {session[:user_info]["id"] => card},
-            time: Time.current,
-          }.to_json
-        )
-        $redis.lpush("game:#{@game.uuid}:cards:#{session[:user_info]["id"]}", cards) if cards.present?
-        Turbo::StreamsChannel.broadcast_update_to(
-          "game_#{@game.id}",
-          target: "actions_#{session[:user_info]["id"]}",
-          partial: "frontend/games/actions",
-          locals: { game: @game, cards: }
-        )
+        GameJob::PlayCardJob.perform_now(@game, card, current_player)
+        # cards.delete_at(card_idx)
+        # $redis.lpush(
+        #   "game:#{@game.uuid}",
+        #   {
+        #     event: "card_played",
+        #     data: {session[:user_info]["id"] => card},
+        #     time: Time.current,
+        #   }.to_json
+        # )
+        # $redis.lpush("game:#{@game.uuid}:cards:#{session[:user_info]["id"]}", cards) if cards.present?
+        # current_player_position = $redis.get("game:#{@game.uuid}:current_player_position").to_i
+        # $redis.set("game:#{@game.uuid}:current_player_position", (current_player_position + 1) % @game.players.size)
+        # Turbo::StreamsChannel.broadcast_update_to(
+        #   "game_#{@game.id}",
+        #   target: "actions_#{session[:user_info]["id"]}",
+        #   partial: "frontend/games/actions",
+        #   locals: { game: @game, cards:, is_your_turn: }
+        # )
+        # Turbo::StreamsChannel.broadcast_update_to(
+        #   "game_#{@game.id}",
+        #   target: "self_status_#{session[:user_info]["id"]}",
+        #   partial: "frontend/games/self_status",
+        #   locals: { cucumbers: 1 }
+        # )
       else
         $redis.lpush(
           "game:#{@game.uuid}",
@@ -83,12 +94,12 @@ module Frontend
           }.to_json
         )
       end
-      Turbo::StreamsChannel.broadcast_update_to(
-        "game_#{@game.id}",
-        target: "game_state_game_#{@game.id}",
-        partial: "frontend/games/game_state",
-        locals: { game: @game }
-      )
+      # Turbo::StreamsChannel.broadcast_update_to(
+      #   "game_#{@game.id}",
+      #   target: "game_state_game_#{@game.id}",
+      #   partial: "frontend/games/game_state",
+      #   locals: { game: @game }
+      # )
     end
 
     def next_state
@@ -168,6 +179,10 @@ module Frontend
       host = Rails.configuration.game_as_a_service.backend_host
       url = "#{host}/rooms/#{@game.room_id}:endGame"
       HTTPX.plugin(:auth).bearer_auth(session[:token]).post(url, body: '')
+    end
+
+    def is_your_turn
+      @game.players[$redis.get("game:#{@game.uuid}:current_player_position").to_i]["id"] == session[:user_info]["id"]
     end
   end
 end
