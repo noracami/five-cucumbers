@@ -33,7 +33,6 @@ module GameJob
       # puts "\n" * 3
       # puts "game:#{game.uuid}:cards:#{current_player["id"]}"
       # pp $redis.lrange("game:#{game.uuid}:cards:#{current_player["id"]}", 0, -1)
-      sleep 1
       $redis.lpush(
         "game:#{game.uuid}",
         {

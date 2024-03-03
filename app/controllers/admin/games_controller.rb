@@ -3,14 +3,9 @@ module Admin
     skip_before_action :verify_authenticity_token, only: %i(create)
 
     def create
-      room_id = "dev_#{SecureRandom.base36(13)}"
-      me = {id: SecureRandom.base36(24), nickname: 'Me', email: 'dev@cucumbers.io'}
+      room_id = "dev_#{SecureRandom.base36(20)}"
+      me = {id: 'developer000000000000000', nickname: 'Me', email: 'dev@cucumbers.io'}
       user_info = {nickname: me[:nickname], email: me[:email], id: me[:id]}
-      players = [{id: me[:id], nickName: me[:nickname]}]
-      3.times { players << {id: SecureRandom.base36(24), nickName: Faker::Name.first_name, isAI: true} }
-
-      game_id = SecureRandom.base36(8)
-      game_id = SecureRandom.base36(8) while Game.exists?(uuid: game_id)
 
       game = Game.create!(uuid: game_id, room_id: room_id, players: players)
       $redis.lpush(

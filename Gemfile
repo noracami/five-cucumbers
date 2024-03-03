@@ -44,3 +44,5 @@ group :development do
 
   gem "htmlbeautifier", require: false
 end
+
+gem "solid_queue", "~> 0.2.1"

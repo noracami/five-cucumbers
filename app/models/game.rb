@@ -8,6 +8,11 @@ class Game < ApplicationRecord
 
   scope :playing, -> { where.not(state: :completed) }
 
+  before_create do
+    self.state = :initializing
+    self.uuid ||= SecureRandom.base36(24) # could be conflict but it's ok
+  end
+
   after_create do
     $redis.set "game:#{uuid}:current_player_position", 0, ex: 1.hour.from_now
     GameJob::DealJob.perform_now(self)
@@ -25,11 +30,10 @@ class Game < ApplicationRecord
   end
 
   def deal_cards
-    # mock cards
     cards = (1..60).to_a.shuffle
     players.each do |player|
       key = "game:#{uuid}:cards:#{player["id"]}"
-      $redis.lpush(key, cards.pop(5))
+      $redis.lpush(key, cards.pop(7))
     end
   end
 
