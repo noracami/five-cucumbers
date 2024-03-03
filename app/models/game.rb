@@ -1,9 +1,10 @@
 class Game < ApplicationRecord
   enum state: {
     initializing: 0,
-    initialized: 1,
+    player_number_confirmed: 1,
     running: 2,
-    completed: 3
+    round_end: 3,
+    completed: 4
   }, _prefix: true
 
   scope :playing, -> { where.not(state: :completed) }
@@ -14,8 +15,36 @@ class Game < ApplicationRecord
   end
 
   after_create do
+    if players.size >= 2
+      self.state_player_number_confirmed!
+      $redis.lpush(
+        "game:#{game.uuid}",
+        {
+          event: "game_created",
+          data: {
+            game_id: uuid,
+            room_id: room_id,
+            players: players
+          },
+          time: game.created_at,
+          ex: 1.hour.from_now
+        }.to_json
+      )
+    end
+  end
+
+  after_save :handle_round_end, if: %i[state_player_number_confirmed? state_round_end?]
+
+  def handle_round_end
     $redis.set "game:#{uuid}:current_player_position", 0, ex: 1.hour.from_now
-    GameJob::DealJob.perform_now(self)
+    GameJob::DealCardJob.perform_later(self)
+  end
+
+  def self.create_mock_game
+    Game.create!(
+      room_id: "dev_#{SecureRandom.base36(20)}",
+      players: [Games::Player.new({id: 'developer000000000000000', nickname: 'Me', email: 'dev@cucumbers.io'}).to_json]
+    )
   end
 
   def last_events(limit: 10)
@@ -31,10 +60,12 @@ class Game < ApplicationRecord
 
   def deal_cards
     cards = (1..60).to_a.shuffle
-    players.each do |player|
-      key = "game:#{uuid}:cards:#{player["id"]}"
-      $redis.lpush(key, cards.pop(7))
+    self.players = players.map do |player|
+      player = Games::Player.new(player)
+      player.deal_cards(cards.pop(7)) unless player.is_out?
+      player
     end
+    self.save!
   end
 
   def player_cards(player_id)

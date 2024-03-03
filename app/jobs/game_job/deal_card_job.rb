@@ -1,5 +1,5 @@
 module GameJob
-  class DealJob < ApplicationJob
+  class DealCardJob < ApplicationJob
     def perform(game)
       # Do something later
       game.deal_cards
@@ -9,14 +9,14 @@ module GameJob
           "game_#{game.id}",
           target: "actions_#{player["id"]}",
           partial: "frontend/games/actions",
-          locals: { game:, cards:, is_your_turn: player["id"] == current_player(game) }
+          locals: { game:, cards:, is_your_turn: player["id"] == current_player_id(game) }
         )
       end
     end
 
     private
 
-    def current_player(game)
+    def current_player_id(game)
       game.players[$redis.get("game:#{game.uuid}:current_player_position").to_i]["id"]
     end
   end

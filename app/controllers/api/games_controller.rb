@@ -10,34 +10,9 @@ module Api
       room_id = params.fetch("roomId")
       players = params.fetch("players")
 
-      game_id = SecureRandom.base36(8)
-      game_id = SecureRandom.base36(8) while Game.exists?(uuid: game_id)
+      game = Game.create!(room_id: room_id, players: players)
 
-      game = Game.create!(uuid: game_id, room_id: room_id, players: players)
-
-      $redis.lpush(
-        "game:#{game_id}",
-        {
-          event: "game_created",
-          data: {
-            game_id: game_id,
-            room_id: room_id,
-            players: players
-          },
-          time: game.created_at,
-          ex: 1.hour.from_now
-        }.to_json
-      )
-
-      game.deal_cards
-
-      render json: { url: frontend_game_url(game_id) }, status: 201
-    end
-
-    private
-
-    def game_params
-      # params.require(:game).permit(:name, :description, :price)
+      render json: { url: frontend_game_url(game.uuid) }, status: 201
     end
   end
 end

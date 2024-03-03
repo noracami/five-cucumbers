@@ -7,13 +7,13 @@ module Admin
       me = {id: 'developer000000000000000', nickname: 'Me', email: 'dev@cucumbers.io'}
       user_info = {nickname: me[:nickname], email: me[:email], id: me[:id]}
 
-      game = Game.create!(uuid: game_id, room_id: room_id, players: players)
+      game = Game.create!(room_id: room_id, players: players)
       $redis.lpush(
-        "game:#{game_id}",
+        "game:#{game.uuid}",
         {
           event: "game_created",
           data: {
-            game_id: game_id,
+            game_id: game.uuid,
             room_id: room_id,
             players: players
           },
@@ -22,7 +22,7 @@ module Admin
         }.to_json
       )
 
-      redirect_to frontend_game_url(game_id, token: Base64.urlsafe_encode64(user_info.to_json))
+      redirect_to frontend_game_url(game.uuid, token: Base64.urlsafe_encode64(user_info.to_json))
     end
   end
 end
