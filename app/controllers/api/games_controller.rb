@@ -9,6 +9,7 @@ module Api
     def create
       room_id = params.fetch("roomId")
       players = params.fetch("players")
+      pp params.permit!.to_h
 
       game = Game.create!(room_id: room_id, players: players.map { |player| Games::Player.new(player).to_json })
 
