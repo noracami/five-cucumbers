@@ -10,7 +10,7 @@ module Api
       room_id = params.fetch("roomId")
       players = params.fetch("players")
 
-      game = Game.create!(room_id: room_id, players: players)
+      game = Game.create!(room_id: room_id, players: players.map { |player| Games::Player.new(player).to_json })
 
       render json: { url: frontend_game_url(game.uuid) }, status: 201
     end

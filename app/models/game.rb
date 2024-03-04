@@ -27,16 +27,16 @@ class Game < ApplicationRecord
             players: players
           },
           time: game.created_at,
-          ex: 1.hour.from_now
+          ex: Rails.configuration.redis.expiration.seconds.from_now
         }.to_json
       )
     end
   end
 
-  after_save :handle_round_end, if: %i[state_player_number_confirmed? state_round_end?]
+  after_update :handle_round_end, if: -> { state_player_number_confirmed? || state_round_end? }
 
   def handle_round_end
-    $redis.set "game:#{uuid}:current_player_position", 0, ex: 1.hour.from_now
+    $redis.set "game:#{uuid}:current_player_position", 0, ex: Rails.configuration.redis.expiration.seconds.from_now
     GameJob::DealCardJob.perform_later(self)
   end
 
@@ -45,6 +45,10 @@ class Game < ApplicationRecord
       room_id: "dev_#{SecureRandom.base36(20)}",
       players: [Games::Player.new({id: 'developer000000000000000', nickname: 'Me', email: 'dev@cucumbers.io'}).to_json]
     )
+  end
+
+  def ready?
+    state.to_sym >= :running
   end
 
   def last_events(limit: 10)
@@ -63,7 +67,7 @@ class Game < ApplicationRecord
     self.players = players.map do |player|
       player = Games::Player.new(player)
       player.deal_cards(cards.pop(7)) unless player.is_out?
-      player
+      player.to_json
     end
     self.save!
   end

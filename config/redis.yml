@@ -1,0 +1,11 @@
+default: &default
+  expiration: <%= ENV.fetch('REDIS_EXPIRATION') { 300 } %>
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default

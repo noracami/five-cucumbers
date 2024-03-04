@@ -45,5 +45,6 @@ module FiveCucumbers
 
     config.game_as_a_service = config_for(:gaas_lobby_platform_service)
     config.auth0 = config_for(:auth0)
+    config.redis = config_for(:redis)
   end
 end

@@ -30,6 +30,14 @@ module Games
       }
     end
 
+    def user_info
+      {
+        id: id,
+        email: email,
+        nickname: nickname
+      }
+    end
+
     def deal_cards(cards)
       self.cards = cards
       self

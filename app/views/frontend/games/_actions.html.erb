@@ -14,14 +14,18 @@
       data: { turbo_method: :get },
       remote: true if Rails.env.development? %>
     <div class="flex items-center">
-      <% cards.each do |card| %>
+      <% cards&.each do |card| %>
         <%= button_to "#{card}", play_card_frontend_game_path(game.uuid, card:), turbo_method: :post, class: 'button w-12 bg-white text-background' %>
       <% end %>
-      <% if is_your_turn %>
+      <% if game.ready? && is_your_turn %>
         <p class="text-blue-500 animate-bounce">輪到你了</p>
       <% else %>
         <p class="text-red-500">waiting</p>
       <% end %>
+      <%= button_to '加入 AI',
+        add_ai_players_frontend_game_path(game.uuid),
+        class: 'button bg-green-600 text-background hover:opacity-80',
+        data: { turbo_method: :post } %>
     </div>
   </div>
 </div>

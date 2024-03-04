@@ -1,17 +1,18 @@
 module GameJob
   class DealCardJob < ApplicationJob
     def perform(game)
-      # Do something later
       game.deal_cards
       game.players.each do |player|
-        cards = $redis.lrange("game:#{game.uuid}:cards:#{player["id"]}", 0, -1)
+        player = Games::Player.new(player)
+        cards = player.cards
         Turbo::StreamsChannel.broadcast_update_to(
           "game_#{game.id}",
-          target: "actions_#{player["id"]}",
+          target: "actions_#{player.id}",
           partial: "frontend/games/actions",
-          locals: { game:, cards:, is_your_turn: player["id"] == current_player_id(game) }
+          locals: { game:, cards:, is_your_turn: player.id == current_player_id(game) }
         )
       end
+      game.state_running!
     end
 
     private

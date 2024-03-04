@@ -9,11 +9,9 @@ Rails.application.routes.draw do
   namespace "frontend" do
     resources :games, only: %i(index show) do
       member do
-        # get :previous_room
-        # get :next_room
         post :end_game
-        post :next_state
         post "play/:card" => "games#play_card", as: "play_card"
+        post :add_ai_players
       end
     end
   end
