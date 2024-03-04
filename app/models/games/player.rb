@@ -42,5 +42,9 @@ module Games
       self.cards = cards
       self
     end
+
+    def nickName=(value)
+      self.nickname = value
+    end
   end
 end
