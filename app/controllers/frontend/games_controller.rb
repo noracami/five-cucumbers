@@ -17,15 +17,9 @@ module Frontend
           user_info = JSON.parse(Base64.urlsafe_decode64(params[:token]))
           session[:user_info] = {}
           user_info.each { |k, v| session[:user_info][k.to_sym] = v }
-          $redis.lpush(
-            "game:#{@game.uuid}",
-            {
-              event: "user_joined(local)",
-              data: {user: "local"},
-              time: Time.current,
-            }.to_json
-          )
+          Utils::Notify.push_player_joined_event(@game, "developer000000000000000", "player_joined(local)")
         elsif Rails.env.production? && Auth0Client.validate_token(params[:token]).error.nil?
+          # TODO: invoke notify
 
           # save token in session
           session[:token] = params[:token]
@@ -37,7 +31,7 @@ module Frontend
           if res.status.in? 200..299
             session[:user_info] = {}
             res.json.each { |k, v| session[:user_info][k.to_sym] = v }
-            $redis.lpush(
+            Utils::Redis.lpush(
               "game:#{@game.uuid}",
               {
                 event: "user_joined",
@@ -63,11 +57,11 @@ module Frontend
     def play_card
       current_player = session[:user_info]
       card = params[:card]
-      cards = $redis.lrange("game:#{@game.uuid}:cards:#{current_player["id"]}", 0, -1)
+      cards = Utils::Redis.lrange("game:#{@game.uuid}:cards:#{current_player["id"]}", 0, -1)
       if (card_idx = cards.index(card))
         GameJob::PlayCardJob.perform_now(@game, card, current_player)
       else
-        $redis.lpush(
+        Utils::Redis.lpush(
           "game:#{@game.uuid}",
           {
             event: "card_played",
@@ -123,15 +117,16 @@ module Frontend
       end
 
       @game.state_completed!
-      $redis.lpush(
+      Utils::Redis.lpush(
         "game:#{@game.uuid}",
         {
           event: "game_ended",
           data: {},
-          time: @game.updated_at,
+          time: Time.current,
         }.to_json
       )
-      @game.update!(game_logs: $redis.lrange("game:#{@game.uuid}", 0, -1).to_json)
+      game_logs = Utils::Redis.lrange("game:#{@game.uuid}", 0, -1).to_json
+      @game.update!(game_logs: game_logs)
       Turbo::StreamsChannel.broadcast_update_to(
         "game_#{@game.id}",
         target: "game_state_game_#{@game.id}",
@@ -158,7 +153,8 @@ module Frontend
     end
 
     def is_your_turn
-      @game.players[$redis.get("game:#{@game.uuid}:current_player_position").to_i]["id"] == session[:user_info]["id"]
+      current_player_position = Utils::Redis.get("game:#{@game.uuid}:current_player_position").to_i
+      @game.players[current_player_position]["id"] == session[:user_info]["id"]
     end
   end
 end

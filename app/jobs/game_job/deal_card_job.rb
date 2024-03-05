@@ -18,7 +18,8 @@ module GameJob
     private
 
     def current_player_id(game)
-      game.players[$redis.get("game:#{game.uuid}:current_player_position").to_i]["id"]
+      current_player_position = Utils::Redis.get("game:#{game.uuid}:current_player_position").to_i
+      game.players[current_player_position]["id"]
     end
   end
 end

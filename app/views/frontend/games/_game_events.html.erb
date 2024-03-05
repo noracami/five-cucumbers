@@ -1,0 +1,7 @@
+<div id=<%= dom_id game, :game_events %> class="p-2 text-secondary text-2xl">
+  <% game_events.each do |event, time, data| %>
+    <p><%= event %></p>
+    <p><%= data %></p>
+    <p><%= "-- #{time.strftime("%T.%3N")}" %></p>
+  <% end %>
+</div>

@@ -28,11 +28,7 @@
       </div>
       <div class="col-span-3 text-lg">
         <p>Events (Last 10)</p>
-        <% game.last_events.each do |event, time, data| %>
-          <p><%= event %></p>
-          <p><%= data %></p>
-          <p><%= "-- #{time.strftime("%T.%3N")}" %></p>
-        <% end %>
+        <%= render 'frontend/games/game_events', game:, game_events: Utils::Redis.last_10_game_events(game.uuid) %>
       </div>
     </div>
   </div>

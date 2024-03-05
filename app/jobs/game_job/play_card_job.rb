@@ -2,7 +2,7 @@ module GameJob
   class PlayCardJob < ApplicationJob
     def perform(game, card, current_player)
       # Do something later
-      current_player_position = $redis.get("game:#{game.uuid}:current_player_position").to_i
+      current_player_position = Utils::Redis.get("game:#{game.uuid}:current_player_position").to_i
       if current_player["id"] != game.players[current_player_position]["id"]
         puts current_player["id"]
         puts game.players[current_player_position]["id"]
@@ -22,18 +22,12 @@ module GameJob
     private
 
     def choose_ai_card(game, current_player)
-      cards = $redis.lrange("game:#{game.uuid}:cards:#{current_player["id"]}", 0, -1)
+      cards = Utils::Redis.lrange("game:#{game.uuid}:cards:#{current_player["id"]}", 0, -1)
       cards.sample
     end
 
     def exec(game, card, current_player)
-      # pp game
-      # pp current_player
-      # puts $redis.keys("game:#{game.uuid}:*")
-      # puts "\n" * 3
-      # puts "game:#{game.uuid}:cards:#{current_player["id"]}"
-      # pp $redis.lrange("game:#{game.uuid}:cards:#{current_player["id"]}", 0, -1)
-      $redis.lpush(
+      Utils::Redis.lpush(
         "game:#{game.uuid}",
         {
           event: "card_played",
@@ -41,9 +35,9 @@ module GameJob
           time: Time.current,
         }.to_json
       )
-      cards = $redis.lpop("game:#{game.uuid}:cards:#{current_player["id"]}", 7)
+      cards = Utils::Redis.lpop("game:#{game.uuid}:cards:#{current_player["id"]}", 7)
       cards.delete(card)
-      $redis.lpush("game:#{game.uuid}:cards:#{current_player["id"]}", cards) if cards.present?
+      Utils::Redis.lpush("game:#{game.uuid}:cards:#{current_player["id"]}", cards) if cards.present?
 
       Turbo::StreamsChannel.broadcast_update_to(
         "game_#{game.id}",
@@ -58,8 +52,9 @@ module GameJob
         locals: { game: game }
       )
 
-      current_player_position = $redis.get("game:#{game.uuid}:current_player_position").to_i + 1
-      $redis.set("game:#{game.uuid}:current_player_position", current_player_position)
+      current_player_position = Utils::Redis.get("game:#{game.uuid}:current_player_position").to_i
+      current_player_position += 1
+      Utils::Redis.set("game:#{game.uuid}:current_player_position", current_player_position)
       next_player_position = current_player_position % game.players.size
       next_player = game.players[next_player_position]
 
@@ -72,19 +67,13 @@ module GameJob
         return
       end
 
-      $redis.set("game:#{game.uuid}:current_player_position", next_player_position)
+      Utils::Redis.set("game:#{game.uuid}:current_player_position", next_player_position)
       Turbo::StreamsChannel.broadcast_update_to(
         "game_#{game.id}",
         target: "actions_#{next_player["id"]}",
         partial: "frontend/games/actions",
         locals: { game: game, cards:, is_your_turn: true }
       )
-      # Turbo::StreamsChannel.broadcast_update_to(
-      #   "game_#{game.id}",
-      #   target: "self_status_#{current_player["id"]}",
-      #   partial: "frontend/games/self_status",
-      #   locals: { cucumbers: 1 }
-      # )
     end
   end
 end

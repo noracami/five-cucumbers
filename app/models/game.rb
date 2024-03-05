@@ -17,8 +17,8 @@ class Game < ApplicationRecord
   after_create do
     if players.size >= 2
       self.state_player_number_confirmed!
-      $redis.lpush(
-        "game:#{game.uuid}",
+      Utils::Redis.lpush(
+        "game:#{uuid}",
         {
           event: "game_created",
           data: {
@@ -26,7 +26,7 @@ class Game < ApplicationRecord
             room_id: room_id,
             players: players
           },
-          time: game.created_at,
+          time: created_at,
           ex: Rails.configuration.redis.expiration.seconds.from_now
         }.to_json
       )
@@ -36,7 +36,7 @@ class Game < ApplicationRecord
   after_update :handle_round_end, if: -> { state_player_number_confirmed? || state_round_end? }
 
   def handle_round_end
-    $redis.set "game:#{uuid}:current_player_position", 0, ex: Rails.configuration.redis.expiration.seconds.from_now
+    Utils::Redis.set("game:#{uuid}:current_player_position", 0)
     GameJob::DealCardJob.perform_later(self)
   end
 
@@ -52,7 +52,7 @@ class Game < ApplicationRecord
   end
 
   def last_events(limit: 10)
-    $redis.lrange("game:#{uuid}", 0, limit).map do |event|
+    Utils::Redis.lrange("game:#{uuid}", 0, limit).map do |event|
       hash = JSON.parse(event)
       ret = []
       ret << hash["event"]
@@ -74,6 +74,6 @@ class Game < ApplicationRecord
 
   def player_cards(player_id)
     key = "game:#{uuid}:cards:#{player_id}"
-    $redis.lrange(key, 0, -1)
+    Utils::Redis.lrange(key, 0, -1)
   end
 end
