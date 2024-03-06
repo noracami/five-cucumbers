@@ -1,10 +1,6 @@
 module Utils
   class Notify
     def self.push_player_joined_event(game, player_id, event = 'player_joined')
-      5.times do
-        puts "AI players added to game #{game.uuid}"
-      end
-
       message = {
         event: event,
         data: { player_id: player_id },
@@ -12,11 +8,6 @@ module Utils
       }
 
       Utils::Redis.lpush("game:#{game.uuid}:events", message.to_json)
-
-      puts "target: game_events_game_#{game.id}"
-      puts "game_events"
-      pp Utils::Redis.last_10_game_events(game.uuid)
-      puts "##################"
 
       Turbo::StreamsChannel.broadcast_update_to(
         "game_#{game.id}",
@@ -27,6 +18,22 @@ module Utils
           game: game
         }
       )
+    end
+
+    def self.update_players_stat(game)
+      sleep 0.5 while game.players.size < 2
+
+      game.players.each do |player|
+        Turbo::StreamsChannel.broadcast_update_to(
+          "game_#{game.id}",
+          target: "game_players_#{player["id"]}",
+          partial: "frontend/games/game_players",
+          locals: {
+            players: game.players,
+            current_player_id: player["id"]
+          }
+        )
+      end
     end
 
     def self.push_game_started_event(game)

@@ -1,0 +1,31 @@
+<div id=<%= "game_players_#{session.dig("user_info", "id")}" %>>
+  <% players.each do |player| %>
+    <div class="mb-2 px-8">
+      <% if current_player_id == player["id"] %>
+        <div class="flex justify-between gap-2 text-pink-500">
+          <span><%= player["nickname"] %></span>
+          <span><%= player["id"] %></span>
+        </div>
+      <% else %>
+        <div class="flex justify-between gap-2 text-purple-500">
+          <span>
+            <%= player["nickname"] %>
+            <% if player["is_ai"] %>
+              <span class="text-white border rounded-ee-xl rounded-ss-xl w-min p-1 text-sm">AI</span>
+            <% end %>
+          </span>
+          <span><%= player["id"] %></span>
+        </div>
+      <% end %>
+      <div class="flex">
+        <% (1..5).each do |i| %>
+          <% if player["cucumbers"] && i <= player["cucumbers"] %>
+            <img src="/cucumber.png" alt="" sizes="64px" class="w-16">
+          <% else %>
+            <img src="/cucumber.png" alt="" sizes="64px" class="w-16 grayscale">
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

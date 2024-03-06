@@ -1,34 +1,12 @@
 <div id=<%= dom_id game, :game_state %> class="p-2 text-secondary text-2xl">
   <p>Game State: <%= game.state %></p>
-  <div class="grid grid-cols-7">
-    <div class="col-span-4">
+  <div class="grid grid-cols-2">
+    <div class="">
       <p>Player:</p>
-      <% game.players.each do |player| %>
-        <div class="mb-2 px-8">
-          <% if session.dig("user_info", "id") == player["id"] %>
-            <div class="flex justify-between items-center gap-4 text-pink-500">
-            <% else %>
-              <div class="flex justify-between items-center gap-4 text-purple-500">
-              <% end %>
-              <span><%= player["nickname"] %></span>
-              <span><%= player["id"] %></span>
-            </div>
-            <div class="flex">
-              <% random_num = rand(1..5) %>
-              <% (1..5).each do |i| %>
-                <% if i <= random_num %>
-                  <img src="/cucumber.png" alt="" sizes="64px" class="w-16">
-                <% else %>
-                  <img src="/cucumber.png" alt="" sizes="64px" class="w-16 grayscale">
-                <% end %>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-      <div class="col-span-3 text-lg">
-        <p>Events (Last 10)</p>
-        <%= render 'frontend/games/game_events', game:, game_events: Utils::Redis.last_10_game_events(game.uuid) %>
-      </div>
+      <%= render 'frontend/games/game_players', players: game.players, current_player_id: session.dig("user_info", "id") %>
+    </div>
+    <div class="text-lg">
+      <p>Events (Last 10)</p>
+      <%= render 'frontend/games/game_events', game:, game_events: Utils::Redis.last_10_game_events(game.uuid) %>
     </div>
   </div>

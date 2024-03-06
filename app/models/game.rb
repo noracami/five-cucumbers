@@ -37,6 +37,7 @@ class Game < ApplicationRecord
 
   def handle_round_end
     Utils::Redis.set("game:#{uuid}:current_player_position", 0)
+    GameJob::UpdatePlayersStatJob.perform_later(self)
     GameJob::DealCardJob.perform_later(self)
   end
 
