@@ -5,7 +5,7 @@
       <p>Player:</p>
       <%= render 'frontend/games/game_players', players: game.players, current_player_id: session.dig("user_info", "id") %>
     </div>
-    <div class="text-lg">
+    <div class="col-span-3 text-lg">
       <p>Events (Last 10)</p>
       <%= render 'frontend/games/game_events', game:, game_events: Utils::Redis.last_10_game_events(game.uuid) %>
     </div>
