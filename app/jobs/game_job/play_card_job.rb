@@ -1,23 +1,35 @@
 module GameJob
   class PlayCardJob < ApplicationJob
-    def perform(game, card, current_player)
+    def perform(game, card_id, current_player_id)
       # Do something later
-      current_player_position = Utils::Redis.get("game:#{game.uuid}:current_player_position").to_i
-      if current_player["id"] != game.players[current_player_position]["id"]
-        puts current_player["id"]
-        puts game.players[current_player_position]["id"]
-        Rails.logger.error { "Invalid player" }
-        return
-      end
-
-      if Rails.env.development? && current_player["isAI"]
-        # AI logic
-        exec(game, card, current_player)
-        return
-      end
-
-      exec(game, card, current_player)
+      # current_player = game.players.find { |p| p["id"] == current_player_id }
+      current_player = Games::Player.build_from_game(game: game, player_id: current_player_id)
+      current_player.play_card(card_id)
+      game.players[game.players.index { current_player.id == _1['id'] }] = current_player.to_json
+      game.save!
+      Utils::Notify.push_card_played_event(game, current_player, card_id)
     end
+
+    # TODO: Clean up those commented out methods
+
+    # def perform(game, card, current_player)
+    #   # Do something later
+    #   current_player_position = Utils::Redis.get("game:#{game.uuid}:current_player_position").to_i
+    #   if current_player["id"] != game.players[current_player_position]["id"]
+    #     puts current_player["id"]
+    #     puts game.players[current_player_position]["id"]
+    #     Rails.logger.error { "Invalid player" }
+    #     return
+    #   end
+
+    #   if Rails.env.development? && current_player["isAI"]
+    #     # AI logic
+    #     exec(game, card, current_player)
+    #     return
+    #   end
+
+    #   exec(game, card, current_player)
+    # end
 
     private
 

@@ -1,7 +1,7 @@
 <div id=<%= dom_id game, :game_state %> class="p-2 text-secondary text-2xl">
   <p>Game State: <%= game.state %></p>
-  <div class="grid grid-cols-2">
-    <div class="">
+  <div class="grid grid-cols-8">
+    <div class="col-span-5">
       <p>Player:</p>
       <%= render 'frontend/games/game_players', players: game.players, current_player_id: session.dig("user_info", "id") %>
     </div>

@@ -1,9 +1,9 @@
 module Utils
   class Notify
-    def self.push_player_joined_event(game, player_id, event = 'player_joined')
+    def self.push_player_joined_event(game, player, event = 'player_joined')
       message = {
         event: event,
-        data: { player_id: player_id },
+        data: player,
         time: Time.current
       }
 
@@ -34,6 +34,72 @@ module Utils
           }
         )
       end
+    end
+
+    def self.push_card_played_event(game, current_player, card)
+      message = {
+        event: 'card_played',
+        data: "#{current_player.nickname} played (##{card})",
+        time: Time.current
+      }
+
+      Utils::Redis.lpush("game:#{game.uuid}:events", message.to_json)
+
+      # update console seen by all players
+      Turbo::StreamsChannel.broadcast_update_to(
+        "game_#{game.id}",
+        target: "game_events_game_#{game.id}",
+        partial: "frontend/games/game_events",
+        locals: {
+          game_events: Utils::Redis.last_10_game_events(game.uuid),
+          game: game
+        }
+      )
+
+      # update the player stats seen by all players
+      game.players.each do |player|
+        Turbo::StreamsChannel.broadcast_update_to(
+          "game_#{game.id}",
+          target: "game_players_#{player["id"]}",
+          partial: "frontend/games/game_players",
+          locals: {
+            players: game.players,
+            current_player_id: player["id"],
+            card_played: game.players.map { |p| [p["id"], p["card_played"]] }.to_h
+          }
+        )
+      end
+
+
+      # update the player's actions seen by the player
+      Turbo::StreamsChannel.broadcast_update_to(
+        "game_#{game.id}",
+        target: "actions_#{current_player.id}",
+        partial: "frontend/games/actions",
+        locals: {
+          game: game,
+          cards: current_player.cards,
+          is_your_turn: false
+        }
+      )
+    end
+
+    def self.push_generic_event(game, event_name = 'generic_event', data = {})
+      message = {
+        event: event_name,
+        data: data,
+        time: Time.current
+      }
+      Utils::Redis.lpush("game:#{game.uuid}:events", message.to_json)
+      Turbo::StreamsChannel.broadcast_update_to(
+        "game_#{game.id}",
+        target: "game_events_game_#{game.id}",
+        partial: "frontend/games/game_events",
+        locals: {
+          game_events: Utils::Redis.last_10_game_events(game.uuid),
+          game: game
+        }
+      )
     end
 
     def self.push_game_started_event(game)

@@ -4,7 +4,14 @@
       <% if current_player_id == player["id"] %>
         <div class="flex justify-between gap-2 text-pink-500">
           <span><%= player["nickname"] %></span>
-          <span><%= player["id"] %></span>
+          <span>
+            <% if (card_played ||= false) %>
+              <% if (card_played_this_trick = card_played[player["id"]]) %>
+                <span class="text-white border rounded-xl w-min p-1 text-sm"># <%= card_played_this_trick %></span>
+              <% end %>
+            <% end %>
+            <%= player["id"] %>
+          </span>
         </div>
       <% else %>
         <div class="flex justify-between gap-2 text-purple-500">
@@ -14,7 +21,14 @@
               <span class="text-white border rounded-ee-xl rounded-ss-xl w-min p-1 text-sm">AI</span>
             <% end %>
           </span>
-          <span><%= player["id"] %></span>
+          <span>
+            <% if (card_played ||= false) %>
+              <% if (card_played_this_trick = card_played[player["id"]]) %>
+                <span class="text-white border rounded-xl w-min p-1 text-sm"># <%= card_played_this_trick %></span>
+              <% end %>
+            <% end %>
+            <%= player["id"] %>
+          </span>
         </div>
       <% end %>
       <div class="flex">

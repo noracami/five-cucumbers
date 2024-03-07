@@ -66,7 +66,7 @@ class Game < ApplicationRecord
   def deal_cards
     cards = (1..60).to_a.shuffle
     self.players = players.map do |player|
-      player = Games::Player.new(player)
+      player = Games::Player.build_from_game(game: self, player_id: player["id"])
       player.deal_cards(cards.pop(7)) unless player.is_out?
       player.to_json
     end
@@ -74,7 +74,20 @@ class Game < ApplicationRecord
   end
 
   def player_cards(player_id)
-    key = "game:#{uuid}:cards:#{player_id}"
-    Utils::Redis.lrange(key, 0, -1)
+    players.find { |p| p["id"] == player_id }["cards"]
+  end
+
+  #
+  #
+  # @param [String] player_uuid
+  # @param [String] card_id
+  def play_card(player_id:, card_id:)
+    cards = player_cards(player_id)
+    if cards.index(card_id.to_i)
+      GameJob::PlayCardJob.perform_now(self, card_id.to_i, player_id)
+      return OpenStruct.new(errors: [])
+    else
+      return OpenStruct.new(errors: ["card not found"])
+    end
   end
 end
