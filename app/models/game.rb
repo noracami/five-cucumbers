@@ -36,9 +36,15 @@ class Game < ApplicationRecord
   after_update :handle_round_end, if: -> { state_player_number_confirmed? || state_round_end? }
 
   def handle_round_end
-    Utils::Redis.set("game:#{uuid}:current_player_position", 0)
-    GameJob::UpdatePlayersStatJob.perform_later(self)
-    GameJob::DealCardJob.perform_later(self)
+    if has_winner?
+      self.state_completed!
+
+    else
+
+      Utils::Redis.set("game:#{uuid}:current_player_position", 0)
+      GameJob::UpdatePlayersStatJob.perform_later(self)
+      GameJob::DealCardJob.perform_later(self)
+    end
   end
 
   def self.create_mock_game
@@ -50,6 +56,18 @@ class Game < ApplicationRecord
 
   def ready?
     state.to_sym >= :running
+  end
+
+  def wrap_players
+    players.map { |p| Games::Player.build_from_game(game: self, player_id: p["id"]) }
+  end
+
+  def has_winner?
+    wrap_players.one?(&:is_out?)
+  end
+
+  def remaining_players
+    wrap_players.reject(&:is_out?)
   end
 
   def last_events(limit: 10)
