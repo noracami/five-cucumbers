@@ -13,7 +13,7 @@
   </section>
   <section class="card-mono">
     <header class="p-2 text-secondary">ACTIONS</header>
-    <%= render 'actions', game:, cards: current_player.cards, is_your_turn: is_your_turn(current_player_id) %>
+    <%= render 'actions', game:, current_player: %>
   </section>
   <section class="card-mono">
     <header class="p-2 text-secondary">GAME STATE</header>

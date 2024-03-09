@@ -1,8 +1,8 @@
 module Frontend
   class GamesController < ApplicationController
-    skip_before_action :verify_authenticity_token, only: %i(show next_state end_game)
+    skip_before_action :verify_authenticity_token, only: %i(show end_game)
 
-    before_action :set_game, only: %i(show play_card next_state end_game add_ai_players)
+    before_action :set_game, only: %i(show play_card end_game add_ai_players)
     after_action :allow_iframe, only: %i(show)
 
     helper_method :is_your_turn, :current_player_id
@@ -53,27 +53,6 @@ module Frontend
       else
         return render json: { status: "ok" }
       end
-    end
-
-    def next_state
-      return render json: { status: "no next state" } if @game.state == "completed"
-
-      @game.update!(state: Game.states[@game.state] + 1)
-
-      if @game.state == "completed" && Rails.env.production?
-        # send request to end game
-        send_end_game_request_to_gaas
-        return render json: { status: "ok" }
-      end
-
-      Turbo::StreamsChannel.broadcast_update_to(
-        "game_#{@game.id}",
-        target: "game_state_#{@game.id}",
-        partial: "frontend/games/game_state",
-        locals: { game: @game, random_num: rand(1..5) }
-      )
-      # redirect_to frontend_game_path
-      render json: { status: "ok" }, status: 303
     end
 
     def end_game

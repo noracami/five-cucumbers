@@ -3,7 +3,7 @@
   <div class="grid grid-cols-8">
     <div class="col-span-5">
       <p>Player:</p>
-      <%= render 'frontend/games/game_players', players: game.wrap_players, current_player_id: %>
+      <%= render 'frontend/games/game_players', game:, current_player_id: %>
     </div>
     <div class="col-span-3 text-lg">
       <p>Events (Last 10)</p>

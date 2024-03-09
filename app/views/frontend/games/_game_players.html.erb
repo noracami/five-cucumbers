@@ -1,5 +1,5 @@
 <div id=<%= "game_players_#{session.dig("user_info", "id")}" %>>
-  <% players.each do |player| %>
+  <% game.wrap_players.each do |player| %>
     <div class="mb-2 px-8">
       <% if current_player_id == player.id %>
         <div class="flex justify-between gap-2 text-pink-500">
@@ -8,7 +8,7 @@
             <% if (card_played_this_trick = player.card_played) %>
               <span class="text-white border rounded-xl w-min p-1 text-sm"># <%= card_played_this_trick %></span>
             <% end %>
-            <% if is_your_turn(player.id) %>
+            <% if Utils::GameHelper.is_your_turn?(game, player.id) %>
               <span class="text-white border rounded-xl w-min p-1 text-sm"><%= player.id %></span>
             <% end %>
             <%= player.id %>
@@ -26,8 +26,8 @@
             <% if (card_played_this_trick = player.card_played) %>
               <span class="text-white border rounded-xl w-min p-1 text-sm"># <%= card_played_this_trick %></span>
             <% end %>
-            <% if is_your_turn(player.id) %>
-              <span class="text-white border rounded-xl w-min p-1 text-sm"><%= player.id %></span>
+            <% if Utils::GameHelper.is_your_turn?(game, player.id) %>
+              <span class="text-primary animate-pulse">thinking...</span>
             <% end %>
             <%= player.id %>
           </span>

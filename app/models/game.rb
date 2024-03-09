@@ -33,13 +33,19 @@ class Game < ApplicationRecord
     end
   end
 
+  # TODO: initialize trick container for each round
+  # TODO: job after all players played their cards
+  # TODO: job after 7 tricks played
+  # TODO: job after round end
+  # TODO: job after game end
+
   after_update :handle_the_first_round_of_game, if: -> { state_player_number_confirmed? }
   after_update :handle_round_end, if: -> { state_round_end? }
 
   def handle_the_first_round_of_game
     decide_first_player
-    GameJob::DealCardJob.perform_later(self) # game go running after this job is done
-    GameJob::UpdatePlayersStatJob.perform_later(self)
+    GameJob::DealCardJob.perform_later(game_id: id) # game go running after this job is done
+    GameJob::UpdatePlayersStatJob.perform_later(game_id: id)
   end
 
   def decide_first_player(last_trick_winner_id = nil)
@@ -48,12 +54,11 @@ class Game < ApplicationRecord
       player = wrap_players.find { |p| p.id == last_trick_winner_id }
       player = wrap_players[(wrap_players.index(player) + 1) % wrap_players.size] while player.is_out?
       fp = wrap_players.index(player) { |p| p.id == player.id}
-      Utils::Redis.set("game:#{uuid}:current_player_position", fp)
     else
       fp = rand(players.size)
-      Utils::Redis.set("game:#{uuid}:current_player_position", fp)
     end
-    Utils::Notify.push_time_to_player_event(self, wrap_players[fp].nickname, "time_to_player")
+    Utils::Redis.set("game:#{uuid}:current_player_position", fp)
+    Utils::Notify.push_time_to_player_event(self, wrap_players[fp].nickname)
   end
 
   def handle_round_end
@@ -104,11 +109,12 @@ class Game < ApplicationRecord
 
   def deal_cards
     cards = (1..60).to_a.shuffle
-    self.players = players.map do |player|
-      player = Games::Player.build_from_game(game: self, player_id: player["id"])
+    self.players = wrap_players.map do |player|
       player.deal_cards(cards.pop(7)) unless player.is_out?
+      raise "ERROR" if player.cards.size != 7
       player.to_json
     end
+    self.state = :running
     self.save!
   end
 

@@ -7,10 +7,9 @@ module GameJob
       game.save!
 
       # notify next player to play
-      players_position = game.wrap_players.map.with_index { |p, i| [i, p.id, p.is_out?] }.reject { _3 }.cycle
-      current_player_position = players_position.first
-      current_player_position = players_position.next while current_player_position[1] != current_player_id
-      next_player_position = players_position.next
+      current_player_position = Utils::Redis.get("game:#{game.uuid}:current_player_position").to_i
+      players_position = game.wrap_players.map.with_index { |p, i| [i, p.id, p.is_out?] }.reject { _3 }.cycle(2).to_a
+      next_player_position = players_position.index { _2 == current_player.id } + 1
       Utils::Redis.set("game:#{game.uuid}:current_player_position", next_player_position[0])
 
       Utils::Notify.push_card_played_event(game, current_player, card_id)

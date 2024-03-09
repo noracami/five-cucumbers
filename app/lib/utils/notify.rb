@@ -20,10 +20,10 @@ module Utils
       )
     end
 
-    def self.push_time_to_player_event(game, player_nickname, event = 'time_to_player')
+    def self.push_time_to_player_event(game, player_nickname, event = 'system_message')
       message = {
         event: event,
-        data: player_nickname,
+        data: "It's #{player_nickname}'s turn.",
         time: Time.current
       }
       Utils::Redis.lpush("game:#{game.uuid}:events", message.to_json)
@@ -46,7 +46,7 @@ module Utils
           target: "game_players_#{player.id}",
           partial: "frontend/games/game_players",
           locals: {
-            players: game.wrap_players,
+            game: game,
             current_player_id: player.id
           }
         )
@@ -80,7 +80,7 @@ module Utils
           target: "game_players_#{player.id}",
           partial: "frontend/games/game_players",
           locals: {
-            players: game.wrap_players,
+            game:,
             current_player_id: player.id,
           }
         )
@@ -92,8 +92,8 @@ module Utils
         target: "actions_#{current_player.id}",
         partial: "frontend/games/actions",
         locals: {
-          game: game,
-          cards: current_player.cards,
+          game:,
+          current_player:,
           is_your_turn: false
         }
       )

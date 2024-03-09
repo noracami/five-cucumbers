@@ -13,13 +13,13 @@ module GameJob
     ].freeze
 
     def perform(game, ai_player_number = 3)
-      players = AI_PLAYERS.sample(ai_player_number).map { |player| Games::Player.new(player) }
-      game.players = game.players + players.map(&:as_json)
+      AI_PLAYERS
+        .sample(ai_player_number)
+        .map { |player| Games::Player.new(player) }
+        .each { |player| Utils::Notify.push_player_joined_event(game, player.nickname, 'ai_joined') }
+        .then { |players| game.players = game.players + players.map(&:to_json) }
       game.state = :player_number_confirmed
       game.save!
-      players.each do |player|
-        Utils::Notify.push_player_joined_event(game, player.id, 'ai_joined')
-      end
     end
   end
 end
