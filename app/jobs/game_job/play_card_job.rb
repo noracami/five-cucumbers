@@ -1,17 +1,22 @@
 module GameJob
   class PlayCardJob < ApplicationJob
     def perform(game, card_id, current_player_id)
-      # Do something later
-      # current_player = game.players.find { |p| p["id"] == current_player_id }
       current_player = Games::Player.build_from_game(game: game, player_id: current_player_id)
       current_player.play_card(card_id)
       game.players[game.players.index { current_player.id == _1['id'] }] = current_player.to_json
       game.save!
+
+      # notify next player to play
+      players_position = game.wrap_players.map.with_index { |p, i| [i, p.id, p.is_out?] }.reject { _3 }.cycle
+      current_player_position = players_position.first
+      current_player_position = players_position.next while current_player_position[1] != current_player_id
+      next_player_position = players_position.next
+      Utils::Redis.set("game:#{game.uuid}:current_player_position", next_player_position[0])
+
       Utils::Notify.push_card_played_event(game, current_player, card_id)
     end
 
-    # TODO: Clean up those commented out methods
-
+    # [ ]: Clean up those commented out methods
     # def perform(game, card, current_player)
     #   # Do something later
     #   current_player_position = Utils::Redis.get("game:#{game.uuid}:current_player_position").to_i

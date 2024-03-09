@@ -33,7 +33,28 @@ class Game < ApplicationRecord
     end
   end
 
-  after_update :handle_round_end, if: -> { state_player_number_confirmed? || state_round_end? }
+  after_update :handle_the_first_round_of_game, if: -> { state_player_number_confirmed? }
+  after_update :handle_round_end, if: -> { state_round_end? }
+
+  def handle_the_first_round_of_game
+    decide_first_player
+    GameJob::DealCardJob.perform_later(self) # game go running after this job is done
+    GameJob::UpdatePlayersStatJob.perform_later(self)
+  end
+
+  def decide_first_player(last_trick_winner_id = nil)
+    fp = nil
+    if last_trick_winner_id
+      player = wrap_players.find { |p| p.id == last_trick_winner_id }
+      player = wrap_players[(wrap_players.index(player) + 1) % wrap_players.size] while player.is_out?
+      fp = wrap_players.index(player) { |p| p.id == player.id}
+      Utils::Redis.set("game:#{uuid}:current_player_position", fp)
+    else
+      fp = rand(players.size)
+      Utils::Redis.set("game:#{uuid}:current_player_position", fp)
+    end
+    Utils::Notify.push_time_to_player_event(self, wrap_players[fp].nickname, "time_to_player")
+  end
 
   def handle_round_end
     if has_winner?

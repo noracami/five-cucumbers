@@ -14,7 +14,7 @@ module Utils
     end
 
     def self.lpush(key, value, ex: Rails.configuration.redis.expiration)
-      client.expire(key, ex) if ex
+      client.expire(key, ex)
       client.lpush(key, value)
     end
 

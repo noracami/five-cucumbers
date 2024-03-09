@@ -62,5 +62,13 @@ module Games
       self.card_played = card
       cards.delete(card)
     end
+
+    def is_out?
+      is_out
+    end
+
+    def is_ai?
+      is_ai
+    end
   end
 end

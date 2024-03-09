@@ -5,7 +5,7 @@ module Frontend
     before_action :set_game, only: %i(show play_card next_state end_game add_ai_players)
     after_action :allow_iframe, only: %i(show)
 
-    helper_method :is_your_turn
+    helper_method :is_your_turn, :current_player_id
 
     def index
       @games = Game.playing.order(updated_at: :desc).limit(10)
@@ -39,7 +39,7 @@ module Frontend
         return redirect_to frontend_game_path
       end
 
-      @cards = @game.players.find { |p| p["id"] == session[:user_info]["id"] }["cards"]
+      @current_player = @game.wrap_players.find { |p| p.id == current_player_id }
     end
 
     def add_ai_players
@@ -47,7 +47,7 @@ module Frontend
     end
 
     def play_card
-      res = @game.play_card(player_id: session[:user_info]["id"], card_id: params[:card])
+      res = @game.play_card(player_id: current_player_id, card_id: params[:card])
       if res.errors.any?
         return render json: { status: "error", errors: res.errors }, status: 422
       else
@@ -96,9 +96,13 @@ module Frontend
       raise "send_end_game_request_to_gaas is not implemented"
     end
 
-    def is_your_turn
+    def is_your_turn(player_id)
       current_player_position = Utils::Redis.get("game:#{@game.uuid}:current_player_position").to_i
-      @game.players[current_player_position]["id"] == session[:user_info]["id"]
+      @game.players[current_player_position]["id"] == player_id #session[:user_info]["id"]
+    end
+
+    def current_player_id
+      session.dig("user_info", "id")
     end
   end
 end

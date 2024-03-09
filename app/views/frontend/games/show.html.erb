@@ -1,19 +1,19 @@
 <% game = @game %>
+<% current_player = @current_player %>
 <%= turbo_stream_from dom_id(game) %>
-<% my_cucumbers = rand(1..5) %>
 <div>
   <%= render 'room_info', game: %>
   <section class="card-mono">
     <header class="p-2 text-secondary">MY STATUS</header>
     <div class="p-2 text-primary text-2xl">
       <p>Nickname: <span class="text-pink-500"><%= session.dig("user_info", "nickname") %></span></p>
-      <p>ID: <span class="text-pink-500"><%= session.dig("user_info", "id") %></span></p>
-      <%= render 'self_status', cucumbers: my_cucumbers %>
+      <p>ID: <span class="text-pink-500"><%= current_player_id %></span></p>
+      <%= render 'self_status', cucumbers: current_player.cucumbers %>
     </div>
   </section>
   <section class="card-mono">
     <header class="p-2 text-secondary">ACTIONS</header>
-    <%= render 'actions', game:, cards: @cards, is_your_turn: %>
+    <%= render 'actions', game:, cards: current_player.cards, is_your_turn: is_your_turn(current_player_id) %>
   </section>
   <section class="card-mono">
     <header class="p-2 text-secondary">GAME STATE</header>
