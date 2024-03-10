@@ -18,12 +18,16 @@ module Utils
       client.lpush(key, value)
     end
 
-    def self.lrange(key, start, stop)
+    def self.lrange(key, start = 0, stop = -1)
       client.lrange(key, start, stop)
     end
 
     def self.lpop(key, count)
       client.lpop(key, count)
+    end
+
+    def self.del(key)
+      client.del(key)
     end
 
     # game specific methods
@@ -36,6 +40,11 @@ module Utils
         ret << hash["data"]
         ret
       end
+    end
+
+    def self.initialize_trick(game_uuid)
+      del("game:#{game_uuid}:trick")
+      set("game:#{game_uuid}:trick_count", 1)
     end
   end
 end

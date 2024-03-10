@@ -33,6 +33,7 @@ class Game < ApplicationRecord
     end
   end
 
+  # [x]: initialize trick container
   # TODO: initialize trick container for each round
   # TODO: job after all players played their cards
   # TODO: job after 7 tricks played
@@ -43,9 +44,11 @@ class Game < ApplicationRecord
   after_update :handle_round_end, if: -> { state_round_end? }
 
   def handle_the_first_round_of_game
-    decide_first_player
-    GameJob::DealCardJob.perform_later(game_id: id) # game go running after this job is done
-    GameJob::UpdatePlayersStatJob.perform_later(game_id: id)
+    GameJob::PrepareRoundJob.perform_later(id)
+  end
+
+  def initialize_trick
+    Utils::Redis.initialize_trick(uuid)
   end
 
   def decide_first_player(last_trick_winner_id = nil)
@@ -107,7 +110,7 @@ class Game < ApplicationRecord
     end
   end
 
-  def deal_cards
+  def deal_cards!
     cards = (1..60).to_a.shuffle
     self.players = wrap_players.map do |player|
       player.deal_cards(cards.pop(7)) unless player.is_out?

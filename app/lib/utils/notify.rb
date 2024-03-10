@@ -1,5 +1,42 @@
 module Utils
   class Notify
+    include ActiveModel::Model
+    include ActiveModel::Attributes
+
+    attribute :game_uuid, :string
+    attribute :game_id, :integer
+    attribute :game
+
+    #
+    # @param game [Game] The game object
+    def initialize(game)
+      super(game_uuid: game.uuid, game_id: game.id, game: game)
+    end
+
+    def inspect
+      "Game Notify: #{game_uuid}, Game ID: #{game_id}"
+    end
+
+    def update_player_actions(player)
+      Turbo::StreamsChannel.broadcast_update_to(
+        "game_#{game_id}",
+        target: "actions_#{player.id}",
+        partial: "frontend/games/actions",
+        locals: { game:, current_player: player }
+      )
+      self
+    end
+
+    def update_players_stat(player_id)
+      Turbo::StreamsChannel.broadcast_update_to(
+        "game_#{game_id}",
+        target: "game_players_#{player_id}",
+        partial: "frontend/games/game_players",
+        locals: { game:, current_player_id: player_id }
+      )
+      self
+    end
+
     def self.push_player_joined_event(game, player, event = 'player_joined')
       message = {
         event: event,
