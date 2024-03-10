@@ -47,12 +47,14 @@ module Frontend
     end
 
     def play_card
-      res = @game.play_card(player_id: current_player_id, card_id: params[:card])
-      if res.errors.any?
-        return render json: { status: "error", errors: res.errors }, status: 422
-      else
-        return render json: { status: "ok" }
-      end
+      ret = current_player.play_card(params[:card])
+
+      return render json: {
+        status: "error",
+        errors: ret.errors
+      }, status: 422 if ret.errors.any?
+
+      render json: { status: "ok" }
     end
 
     def end_game
@@ -82,6 +84,10 @@ module Frontend
 
     def current_player_id
       session.dig("user_info", "id")
+    end
+
+    def current_player
+      Games::Player.build_from_game(game: @game, player_id: current_player_id)
     end
   end
 end

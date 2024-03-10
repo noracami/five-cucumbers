@@ -2,6 +2,7 @@ module Games
   class Card
     include ActiveModel::Model
     include ActiveModel::Attributes
+    include Comparable
 
     attribute :id, :integer
     attribute :cucumbers, :integer
@@ -36,6 +37,14 @@ module Games
 
     def inspect
       "Card: #{id}, Cucumbers: #{cucumbers}, Numbers: #{numbers}"
+    end
+
+    def <=>(another_card)
+      numbers <=> another_card.numbers
+    end
+
+    def playable?(last_played_card, smallest_number)
+      last_played_card.nil? || self >= last_played_card || numbers == smallest_number
     end
   end
 end

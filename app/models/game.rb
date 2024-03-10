@@ -51,15 +51,17 @@ class Game < ApplicationRecord
     Utils::Redis.initialize_trick(uuid)
   end
 
-  def decide_first_player(last_trick_winner_id = nil)
-    fp = nil
-    if last_trick_winner_id
-      player = wrap_players.find { |p| p.id == last_trick_winner_id }
-      player = wrap_players[(wrap_players.index(player) + 1) % wrap_players.size] while player.is_out?
-      fp = wrap_players.index(player) { |p| p.id == player.id}
+  def decide_player_order(last_trick_winner_id = nil)
+    candidates = wrap_players.cycle(2).to_a
+    if last_trick_winner_id.nil?
+      start_player = candidates.sample
     else
-      fp = rand(players.size)
+      start_player_index = candidates.index { |p| p.id == last_trick_winner_id }
+      start_player_index += 1 while candidates[start_player_index].is_out?
+      start_player = candidates[start_player_index]
     end
+
+    player_order = remaining_players.rotate(remaining_players.index { |p| p.id == start_player.id }).map(&:id)
     Utils::Redis.set("game:#{uuid}:current_player_position", fp)
     Utils::Notify.push_time_to_player_event(self, wrap_players[fp].nickname)
   end

@@ -22,6 +22,12 @@ module Utils
       client.lrange(key, start, stop)
     end
 
+    # TODO: implement rpush
+
+    def self.lindex(key, index = 0)
+      client.lindex(key, index)
+    end
+
     def self.lpop(key, count)
       client.lpop(key, count)
     end
@@ -45,6 +51,22 @@ module Utils
     def self.initialize_trick(game_uuid)
       del("game:#{game_uuid}:trick")
       set("game:#{game_uuid}:trick_count", 1)
+    end
+
+    def self.read_trick(game_uuid)
+      lrange("game:#{game_uuid}:trick").map { |id| Games::Card.new(id: id) }
+    end
+
+    def self.read_last_played_card(game_uuid)
+      return nil if lindex("game:#{game_uuid}:trick", 0).nil?
+
+      Games::Card.new(id: lindex("game:#{game_uuid}:trick", 0))
+    end
+
+    def self.play_card_to_trick(game_uuid, card)
+      lpush("game:#{game_uuid}:trick", card)
+
+      # increment trick count
     end
   end
 end
