@@ -47,6 +47,32 @@ module Utils
       self
     end
 
+    def push_error_event(current_player_id, message)
+      notice_id = SecureRandom.base36
+      Turbo::StreamsChannel.broadcast_prepend_to(
+        "game_#{game_id}",
+        partial: "frontend/games/notice",
+        target: "actions_#{current_player_id}",
+        locals: { notice_id:, message: }
+      )
+
+      sleep 1
+
+      Turbo::StreamsChannel.broadcast_remove_to(
+        "game_#{game_id}",
+        target: notice_id
+      )
+    end
+
+    def push_it_is_turn_for_player_event(player_nickname, event = 'system_message')
+      message = {
+        event: event,
+        data: "It's #{player_nickname}'s turn.",
+        time: Time.current
+      }
+      Utils::Redis.lpush("game:#{game_uuid}:events", message.to_json)
+    end
+
     def self.push_player_joined_event(game, player, event = 'player_joined')
       message = {
         event: event,
@@ -54,25 +80,6 @@ module Utils
         time: Time.current
       }
 
-      Utils::Redis.lpush("game:#{game.uuid}:events", message.to_json)
-
-      Turbo::StreamsChannel.broadcast_update_to(
-        "game_#{game.id}",
-        target: "game_events_game_#{game.id}",
-        partial: "frontend/games/game_events",
-        locals: {
-          game_events: Utils::Redis.last_10_game_events(game.uuid),
-          game: game
-        }
-      )
-    end
-
-    def self.push_time_to_player_event(game, player_nickname, event = 'system_message')
-      message = {
-        event: event,
-        data: "It's #{player_nickname}'s turn.",
-        time: Time.current
-      }
       Utils::Redis.lpush("game:#{game.uuid}:events", message.to_json)
 
       Turbo::StreamsChannel.broadcast_update_to(

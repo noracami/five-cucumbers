@@ -1,5 +1,5 @@
 default: &default
-  expiration: <%= ENV.fetch('REDIS_EXPIRATION') { 300 } %>
+  expiration: <%= ENV.fetch('REDIS_EXPIRATION') { 10.minutes.to_i } %>
 
 development:
   <<: *default

@@ -34,6 +34,8 @@ class Game < ApplicationRecord
   end
 
   # [x]: initialize trick container
+  # TODO: complete 1 full trick -- all players played their cards, then decide the winner(next player to play)
+
   # TODO: initialize trick container for each round
   # TODO: job after all players played their cards
   # TODO: job after 7 tricks played
@@ -62,8 +64,8 @@ class Game < ApplicationRecord
     end
 
     player_order = remaining_players.rotate(remaining_players.index { |p| p.id == start_player.id }).map(&:id)
-    Utils::Redis.set("game:#{uuid}:current_player_position", fp)
-    Utils::Notify.push_time_to_player_event(self, wrap_players[fp].nickname)
+    Utils::Redis.rpush("game:#{uuid}:player_order", player_order)
+    Utils::Notify.new(self).push_it_is_turn_for_player_event(start_player.nickname)
   end
 
   def handle_round_end
@@ -110,6 +112,11 @@ class Game < ApplicationRecord
       ret << hash["data"]
       ret
     end
+  end
+
+  def current_player_id
+    card_count_of_trick = Utils::Redis.lrange("game:#{uuid}:trick").size
+    Utils::Redis.lindex("game:#{uuid}:player_order", card_count_of_trick)
   end
 
   def deal_cards!

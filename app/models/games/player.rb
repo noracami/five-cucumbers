@@ -29,6 +29,12 @@ module Games
       "Player: #{id}, Email: #{email}, Nickname: #{nickname}, Cucumbers: #{cucumbers}, Cards: #{cards}"
     end
 
+    def save
+      game = Game.find(game_id)
+      game.players = game.players.map { |p| p["id"] == id ? to_json : p }
+      game.save
+    end
+
     def to_json
       {
         id: id,
@@ -68,8 +74,7 @@ module Games
       # 3. is the card valid to play?
 
       # 1. is it the player's turn?
-      current_player_position = Utils::Redis.get("game:#{game_uuid}:current_player_position").to_i
-      if id != Game.find(game_id).players[current_player_position]["id"]
+      if id != current_player_id
         errors.add(:base, "It's not your turn")
         return self
       end
@@ -97,15 +102,17 @@ module Games
       end
 
       self.card_played = card.id
-      cards.delete(card)
+      self.cards = cards.reject { |c| c == card.id }
+      self.save
       Utils::Redis.play_card_to_trick(game_uuid, card.id)
-
 
       game = Game.find(game_id)
       game_notifier = Utils::Notify.new(game)
       game_notifier.update_game_event_logs
       game_notifier.update_player_actions(self)
-      game.wrap_players.each { |player| game_notifier.update_player_stats(player.id) }
+      game.wrap_players.each { |player| game_notifier.update_players_stat(player.id) }
+
+      self
     end
 
     def is_out?
@@ -123,6 +130,10 @@ module Games
       ret = ai_card_candidates.sample
       ret = ai_card_candidates.sample unless ret.playable?(last_played_card, smallest_number)
       ret.id
+    end
+
+    def current_player_id
+      Game.find(game_id).current_player_id
     end
   end
 end

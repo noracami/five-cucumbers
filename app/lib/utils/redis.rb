@@ -13,6 +13,11 @@ module Utils
       $redis
     end
 
+    def self.rpush(key, value, ex: Rails.configuration.redis.expiration)
+      client.expire(key, ex)
+      client.rpush(key, value)
+    end
+
     def self.lpush(key, value, ex: Rails.configuration.redis.expiration)
       client.expire(key, ex)
       client.lpush(key, value)
@@ -21,8 +26,6 @@ module Utils
     def self.lrange(key, start = 0, stop = -1)
       client.lrange(key, start, stop)
     end
-
-    # TODO: implement rpush
 
     def self.lindex(key, index = 0)
       client.lindex(key, index)

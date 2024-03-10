@@ -11,7 +11,7 @@ module Games
     def initialize(params)
       super(params)
 
-      case (numbers = ((params[:id] - 1) / 4) + 1)
+      case (numbers = ((id - 1) / 4) + 1)
       when 1
         self.numbers = numbers
         self.cucumbers = 0

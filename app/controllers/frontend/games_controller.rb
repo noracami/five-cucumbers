@@ -47,12 +47,13 @@ module Frontend
     end
 
     def play_card
-      ret = current_player.play_card(params[:card])
+      ret = current_player.play_card(params[:card].to_i)
 
-      return render json: {
-        status: "error",
-        errors: ret.errors
-      }, status: 422 if ret.errors.any?
+      if ret.errors.any?
+        Utils::Notify.new(@game).push_error_event(current_player_id, ret.errors.full_messages.join(", "))
+
+        return render json: { status: "error", errors: ret.errors }, status: 422
+      end
 
       render json: { status: "ok" }
     end

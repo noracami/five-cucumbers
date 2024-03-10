@@ -8,8 +8,8 @@
             <% if (card_played_this_trick = player.card_played) %>
               <span class="text-white border rounded-xl w-min p-1 text-sm"># <%= card_played_this_trick %></span>
             <% end %>
-            <% if Utils::GameHelper.is_your_turn?(game, player.id) %>
-              <span class="text-white border rounded-xl w-min p-1 text-sm"><%= player.id %></span>
+            <% if game.current_player_id == player.id %>
+              <span class="text-primary animate-pulse">thinking...</span>
             <% end %>
             <%= player.id %>
           </span>
@@ -26,7 +26,7 @@
             <% if (card_played_this_trick = player.card_played) %>
               <span class="text-white border rounded-xl w-min p-1 text-sm"># <%= card_played_this_trick %></span>
             <% end %>
-            <% if Utils::GameHelper.is_your_turn?(game, player.id) %>
+            <% if game.current_player_id == player.id %>
               <span class="text-primary animate-pulse">thinking...</span>
             <% end %>
             <%= player.id %>
