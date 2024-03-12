@@ -41,6 +41,12 @@
             <img src="/cucumber.png" alt="" sizes="64px" class="w-16 grayscale">
           <% end %>
         <% end %>
+        <% if player.is_ai? %>
+          <%= button_to 'play',
+            ai_play_frontend_game_path(game.uuid, player_id: player.id),
+            class: 'button bg-white text-background hover:opacity-80',
+            data: { turbo_method: :post } %>
+        <% end %>
       </div>
     </div>
   <% end %>

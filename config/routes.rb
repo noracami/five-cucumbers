@@ -11,6 +11,7 @@ Rails.application.routes.draw do
       member do
         post :end_game
         post "play/:card" => "games#play_card", as: "play_card"
+        post "ai_play/:player_id" => "games#play_card_ai", as: "ai_play"
         post :add_ai_players
       end
     end

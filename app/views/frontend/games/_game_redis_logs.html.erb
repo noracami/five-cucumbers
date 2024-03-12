@@ -1,0 +1,14 @@
+<section id=<%= dom_id game, "redis_logs" %>>
+  <header class="p-2 text-secondary">REDIS LOGS</header>
+  <div class="p-2 text-primary text-2xl">
+    <p>Game ID: <span class="text-pink-500"><%= game.id %></span></p>
+    <p>Room ID: <span class="text-pink-500"><%= game.room_id %></span></p>
+  </div>
+  <div class="p-2 bg-slate-800 text-yellow-300">
+    <div>
+      <% (redis_logs ||= []).each do |logs| %>
+        <p class="text-white text-xl left-0 right-0 bg-blue-900"><%= logs %></p>
+      <% end %>
+    </div>
+  </div>
+</section>

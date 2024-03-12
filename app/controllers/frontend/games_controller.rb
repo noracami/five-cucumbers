@@ -2,7 +2,7 @@ module Frontend
   class GamesController < ApplicationController
     skip_before_action :verify_authenticity_token, only: %i(show end_game)
 
-    before_action :set_game, only: %i(show play_card end_game add_ai_players)
+    before_action :set_game, only: %i(show play_card play_card_ai end_game add_ai_players)
     after_action :allow_iframe, only: %i(show)
 
     helper_method :is_your_turn, :current_player_id
@@ -55,7 +55,16 @@ module Frontend
         return render json: { status: "error", errors: ret.errors }, status: 422
       end
 
+      RedisLogs::UpdateJob.perform_now(@game)
+
       render json: { status: "ok" }
+    end
+
+    def play_card_ai
+      player = Games::Player.build_from_game(game: @game, player_id: params[:player_id])
+      ret = player.play_card
+
+      RedisLogs::UpdateJob.perform_now(@game)
     end
 
     def end_game

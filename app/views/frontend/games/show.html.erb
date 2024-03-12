@@ -19,6 +19,9 @@
     <header class="p-2 text-secondary">GAME STATE</header>
     <%= render 'game_state', game: %>
   </section>
+  <% if Rails.env.development? %>
+    <%= render 'game_redis_logs', game:, redis_logs: Utils::Redis.logs(game.uuid) %>
+  <% end %>
   <div class="p-2 bg-slate-800 text-yellow-300">
     <div>
       This game is currently in development.

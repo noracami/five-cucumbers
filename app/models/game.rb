@@ -133,18 +133,4 @@ class Game < ApplicationRecord
   def player_cards(player_id)
     players.find { |p| p["id"] == player_id }["cards"]
   end
-
-  #
-  #
-  # @param [String] player_uuid
-  # @param [String] card_id
-  def play_card(player_id:, card_id:)
-    cards = player_cards(player_id)
-    if cards.index(card_id.to_i)
-      GameJob::PlayCardJob.perform_now(self, card_id.to_i, player_id)
-      return OpenStruct.new(errors: [])
-    else
-      return OpenStruct.new(errors: ["card not found"])
-    end
-  end
 end

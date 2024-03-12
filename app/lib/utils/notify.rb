@@ -73,6 +73,15 @@ module Utils
       Utils::Redis.lpush("game:#{game_uuid}:events", message.to_json)
     end
 
+    def update_redis_logs()
+      Turbo::StreamsChannel.broadcast_update_to(
+        "game_#{game_id}",
+        target: "game_events_game_#{game_id}",
+        partial: "frontend/games/game_events",
+        locals: { game_events: Utils::Redis.last_10_game_events(game_uuid), game: game }
+      )
+    end
+
     def self.push_player_joined_event(game, player, event = 'player_joined')
       message = {
         event: event,
