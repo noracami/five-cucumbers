@@ -79,11 +79,11 @@ module Games
         return self
       end
 
-      last_played_card = Utils::Redis.read_last_played_card(game_uuid)
-      smallest_number = cards.map { |c| Games::Card.new(id: c).numbers }.min
+      largest_card_in_the_trick = Utils::Redis.largest_card_in_the_trick(game_uuid)
+      player_cards = cards.map { |c| Games::Card.new(id: c).numbers }
 
       # if the player is an AI, then the card is chosen by the AI
-      card = choose_ai_card(last_played_card, smallest_number) if is_ai?
+      card = choose_ai_card(largest_card_in_the_trick, player_cards) if is_ai?
 
       # 2. is the card in the player's hand?
       if cards.index(card).nil?
@@ -96,7 +96,7 @@ module Games
       # ++ valid card ++ is either the greater or the same number
       # or the smallest number in the hand
       card = Games::Card.new(id: card)
-      if !card.playable?(last_played_card, smallest_number)
+      if !card.playable?(largest_card_in_the_trick, player_cards)
         errors.add(:base, "Invalid card")
         return self
       end
@@ -108,9 +108,15 @@ module Games
 
       game = Game.find(game_id)
       game_notifier = Utils::Notify.new(game)
+      game_notifier.push_it_is_turn_for_player_event(
+        game.players.find { |p| p["id"] == game.current_player_id }["nickname"]
+      ) if game.current_player_id
       game_notifier.update_game_event_logs
-      game_notifier.update_player_actions(self)
-      game.wrap_players.each { |player| game_notifier.update_players_stat(player.id) }
+      game.wrap_players.each do |player|
+        game_notifier.update_players_stat(player.id).update_player_actions(player)
+      end
+
+      GameJob::EndTrickJob.perform_later(game) if Utils::Redis.n_of_cards_in_the_trick(game_uuid) == game.players.size
 
       self
     end
@@ -125,10 +131,10 @@ module Games
 
     private
 
-    def choose_ai_card(last_played_card, smallest_number)
+    def choose_ai_card(largest_card, player_cards)
       ai_card_candidates = cards.map { |c| Games::Card.new(id: c) }
       ret = ai_card_candidates.sample
-      ret = ai_card_candidates.sample unless ret.playable?(last_played_card, smallest_number)
+      ret = ai_card_candidates.sample unless ret.playable?(largest_card, player_cards)
       ret.id
     end
 

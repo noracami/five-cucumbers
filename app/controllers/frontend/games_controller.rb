@@ -65,6 +65,8 @@ module Frontend
       ret = player.play_card
 
       RedisLogs::UpdateJob.perform_now(@game)
+
+      render json: { status: "ok" }
     end
 
     def end_game

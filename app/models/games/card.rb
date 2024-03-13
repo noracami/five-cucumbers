@@ -43,8 +43,19 @@ module Games
       numbers <=> another_card.numbers
     end
 
-    def playable?(last_played_card, smallest_number)
-      last_played_card.nil? || self >= last_played_card || numbers == smallest_number
+    def playable?(largest_card_in_the_trick, cards)
+      # card is first played
+      if largest_card_in_the_trick.nil?
+        return true
+      # card is larger or equal to the largest card in the trick
+      elsif self >= largest_card_in_the_trick
+        return true
+      # no card is larger or equal to the largest card in the trick and the choose card is the smallest
+      elsif (cards.all? { |card| card < largest_card_in_the_trick.numbers }) && numbers == cards.min
+        return true
+      end
+
+      false
     end
   end
 end

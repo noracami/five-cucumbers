@@ -83,13 +83,25 @@ module Utils
       end
     end
 
-    def self.initialize_trick(game_uuid)
+    def self.initialize_trick(game_uuid, count = 1)
       del("game:#{game_uuid}:trick")
-      set("game:#{game_uuid}:trick_count", 1)
+      set("game:#{game_uuid}:trick_count", count)
+    end
+
+    def self.trick_count(game_uuid)
+      get("game:#{game_uuid}:trick_count").to_i
+    end
+
+    def self.n_of_cards_in_the_trick(game_uuid)
+      lrange("game:#{game_uuid}:trick").size
     end
 
     def self.read_trick(game_uuid)
       lrange("game:#{game_uuid}:trick").map { |id| Games::Card.new(id: id) }
+    end
+
+    def self.largest_card_in_the_trick(game_uuid)
+      read_trick(game_uuid).max_by(&:numbers)
     end
 
     def self.read_last_played_card(game_uuid)
