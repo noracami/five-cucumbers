@@ -43,7 +43,7 @@ class Game < ApplicationRecord
   # TODO: job after game end
 
   after_update :handle_the_first_round_of_game, if: -> { state_player_number_confirmed? }
-  after_update :handle_round_end, if: -> { state_round_end? }
+  # after_update :handle_round_end, if: -> { state_round_end? }
 
   def handle_the_first_round_of_game
     GameJob::PrepareRoundJob.perform_later(id)
@@ -69,17 +69,17 @@ class Game < ApplicationRecord
     Utils::Notify.new(self).push_it_is_turn_for_player_event(start_player.nickname)
   end
 
-  def handle_round_end
-    if has_winner?
-      self.state_completed!
+  # def handle_round_end
+  #   if has_winner?
+  #     self.state_completed!
 
-    else
+  #   else
 
-      Utils::Redis.set("game:#{uuid}:current_player_position", 0)
-      GameJob::UpdatePlayersStatJob.perform_later(self)
-      GameJob::DealCardJob.perform_later(self)
-    end
-  end
+  #     Utils::Redis.set("game:#{uuid}:current_player_position", 0)
+  #     GameJob::UpdatePlayersStatJob.perform_later(self)
+  #     GameJob::DealCardJob.perform_later(self)
+  #   end
+  # end
 
   def self.create_mock_game
     Game.create!(
@@ -96,12 +96,12 @@ class Game < ApplicationRecord
     players.map { |p| Games::Player.build_from_game(game: self, player_id: p["id"]) }
   end
 
-  def has_winner?
-    wrap_players.one?(&:is_out?)
-  end
+    def remaining_players
+      wrap_players.reject(&:is_out?)
+    end
 
-  def remaining_players
-    wrap_players.reject(&:is_out?)
+  def has_winner?
+    remaining_players.size == 1
   end
 
   def last_events(limit: 10)
