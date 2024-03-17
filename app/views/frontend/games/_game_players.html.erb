@@ -6,7 +6,7 @@
           <span><%= player.nickname.truncate(20) %></span>
           <span>
             <% if (card_played_this_trick = player.card_played) %>
-              <span class="text-white border rounded-xl w-min p-1 text-sm"># <%= card_played_this_trick %></span>
+              <span class="text-white border rounded-xl w-min p-1 text-sm"># <%= card_played_this_trick.to_card_number %></span>
             <% end %>
             <% if game.current_player_id == player.id %>
               <span class="text-primary animate-pulse">thinking...</span>
@@ -24,7 +24,7 @@
           </span>
           <span>
             <% if (card_played_this_trick = player.card_played) %>
-              <span class="text-white border rounded-xl w-min p-1 text-sm"># <%= card_played_this_trick %></span>
+              <span class="text-white border rounded-xl w-min p-1 text-sm"># <%= card_played_this_trick.to_card_number %></span>
             <% end %>
             <% if game.current_player_id == player.id %>
               <span class="text-primary animate-pulse">thinking...</span>

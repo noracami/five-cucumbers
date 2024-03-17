@@ -56,6 +56,10 @@ module Games
       }
     end
 
+    def card_instances
+      cards.map { |c| Games::Card.new(id: c) }
+    end
+
     def deal_cards(cards)
       self.cards = cards.sort
       self

@@ -14,8 +14,8 @@
       class: 'button bg-green-600 text-background hover:opacity-80',
       data: { turbo_method: :post } if game.state.in? %w[initializing] %>
     <div class="flex items-center">
-      <% current_player.cards.each do |card| %>
-        <%= button_to "#{card}", play_card_frontend_game_path(game.uuid, card:), turbo_method: :post, class: 'button w-12 bg-white text-background' %>
+      <% current_player.card_instances.each do |card| %>
+        <%= button_to "#{card.numbers}", play_card_frontend_game_path(game.uuid, card: card.id), turbo_method: :post, class: 'button w-12 bg-white text-background' %>
       <% end %>
       <% if current_player.is_out? %>
         <p class="text-red-500">你已經出局</p>
