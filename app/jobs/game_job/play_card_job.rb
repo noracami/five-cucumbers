@@ -15,26 +15,6 @@ module GameJob
       Utils::Notify.push_card_played_event(game, current_player, card_id)
     end
 
-    # [ ]: Clean up those commented out methods
-    # def perform(game, card, current_player)
-    #   # Do something later
-    #   current_player_position = Utils::Redis.get("game:#{game.uuid}:current_player_position").to_i
-    #   if current_player["id"] != game.players[current_player_position]["id"]
-    #     puts current_player["id"]
-    #     puts game.players[current_player_position]["id"]
-    #     Rails.logger.error { "Invalid player" }
-    #     return
-    #   end
-
-    #   if Rails.env.development? && current_player["isAI"]
-    #     # AI logic
-    #     exec(game, card, current_player)
-    #     return
-    #   end
-
-    #   exec(game, card, current_player)
-    # end
-
     private
 
     def choose_ai_card(game, current_player)

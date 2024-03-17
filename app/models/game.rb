@@ -33,15 +33,6 @@ class Game < ApplicationRecord
     end
   end
 
-  # [x]: initialize trick container
-  # [x]: complete 1 full trick -- all players played their cards, then decide the winner(next player to play)
-  # [x]: initialize trick container for each round
-  # [x]: job after all players played their cards
-  # TODO: job after 7 tricks played
-
-  # TODO: job after round end
-  # TODO: job after game end
-
   after_update :handle_the_first_round_of_game, if: -> { state_player_number_confirmed? }
   # after_update :handle_round_end, if: -> { state_round_end? }
 
@@ -96,12 +87,16 @@ class Game < ApplicationRecord
     players.map { |p| Games::Player.build_from_game(game: self, player_id: p["id"]) }
   end
 
-    def remaining_players
-      wrap_players.reject(&:is_out?)
-    end
+  def remaining_players
+    wrap_players.reject(&:is_out?)
+  end
 
   def has_winner?
     remaining_players.size == 1
+  end
+
+  def winner
+    (has_winner? && remaining_players.first) || Games::Player.new(nickname: "No one")
   end
 
   def last_events(limit: 10)
@@ -123,12 +118,24 @@ class Game < ApplicationRecord
   def deal_cards!
     cards = (1..60).to_a.shuffle
     self.players = wrap_players.map do |player|
-      player.deal_cards(cards.pop(7)) unless player.is_out?
-      raise "ERROR" if player.cards.size != 7
+      if player.is_out?
+        player.deal_cards([])
+      else
+        player.deal_cards(cards.pop(7))
+      end
       player.to_json
     end
     self.state = :running
     self.save!
+  end
+
+  def increase_rounds
+    Utils::Redis.incr("game:#{uuid}:rounds")
+  end
+
+  def current_rounds
+    rounds = Utils::Redis.get("game:#{uuid}:rounds").to_i
+    rounds.zero? ? nil : rounds
   end
 
   def player_cards(player_id)

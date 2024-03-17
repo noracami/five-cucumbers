@@ -1,5 +1,5 @@
 <div id=<%= dom_id game, :game_state %> class="p-2 text-secondary text-2xl">
-  <p>Game State: <%= game.state %></p>
+  <%= render 'frontend/games/game_rounds', game:, game_status: game.current_rounds || game.state %>
   <div class="grid grid-cols-8">
     <div class="col-span-5">
       <p>Player:</p>

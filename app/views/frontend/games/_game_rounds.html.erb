@@ -1,0 +1,7 @@
+<p id=<%= dom_id game, :game_rounds %>>
+  <% if game.state_completed? %>
+    Game Completed in <%= game.current_rounds %> rounds, winner: <%= game.winner.nickname %>
+  <% else %>
+    Rounds: <%= game_status %>
+  <% end %>
+</p>

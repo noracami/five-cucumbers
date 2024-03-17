@@ -47,6 +47,16 @@ module Utils
       self
     end
 
+    def update_game_rounds
+      Turbo::StreamsChannel.broadcast_update_to(
+        "game_#{game_id}",
+        target: "game_rounds_game_#{game_id}",
+        partial: "frontend/games/game_rounds",
+        locals: { game: game, game_status: game.current_rounds }
+      )
+      self
+    end
+
     def push_error_event(current_player_id, message)
       notice_id = SecureRandom.base36
       Turbo::StreamsChannel.broadcast_prepend_to(
@@ -65,12 +75,31 @@ module Utils
     end
 
     def push_it_is_turn_for_player_event(player_nickname, event = 'system_message')
+      return unless ENV.fetch('SHOW_WHOSE_TURN_IN_EVENT', false)
+
       message = {
         event: event,
         data: "It's #{player_nickname}'s turn.",
         time: Time.current
       }
       Utils::Redis.lpush("game:#{game_uuid}:events", message.to_json)
+    end
+
+    def push_card_played_event(current_player, card, event = 'system_message')
+      message = {
+        event: event,
+        data: "#{current_player.nickname} played #{card}.",
+        time: Time.current
+      }
+      Utils::Redis.lpush("game:#{game_uuid}:events", message.to_json)
+    end
+
+    def push_game_ended_event
+      message = {
+        event: 'game_ended',
+        time: Time.current
+      }
+      Utils::Redis.lpush("game:#{game.uuid}:events", message.to_json)
     end
 
     def update_redis_logs()
@@ -181,11 +210,7 @@ module Utils
     end
 
     def self.push_game_ended_event(game)
-      message = {
-        event: 'game_ended',
-        time: Time.current
-      }
-      Utils::Redis.lpush("game:#{game.uuid}:events", message.to_json)
+      new(game).push_game_ended_event
     end
 
     def self.push_game_started_event(game)

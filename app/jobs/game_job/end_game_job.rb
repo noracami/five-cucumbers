@@ -19,9 +19,11 @@ module GameJob
         end
       end
 
+      return if game.state_completed?
+
       Utils::Notify.push_game_ended_event(game)
-      game_logs = Utils::Redis.lrange("game:#{game.uuid}", 0, -1).to_json
-      game.update!(game_logs: game_logs, state: "completed")
+      game_logs = Utils::Redis.game_logs(game.uuid)
+      game.update!(game_logs: game_logs.to_json, state: "completed")
     end
 
     def send_end_game_request_to_gaas(room_id, token)

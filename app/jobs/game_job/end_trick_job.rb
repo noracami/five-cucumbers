@@ -39,37 +39,22 @@ module GameJob
         end
         winner.save
 
-        if game.has_winner?
-          game.state_completed!
-          game.wrap_players.each do |player|
-            game_notifier.push_error_event(player.id, "Game is completed")
-          end
-        else
-          game.wrap_players.each do |player|
-            game_notifier.push_error_event(player.id, "Round is completed")
-          end
-        end
-
-        # TODO: notify the players
-        # TODO: emit round completed event
-        return
-        # can't reach here
-        raise "Not implemented"
-
+        game.reload
         players = game.wrap_players
         players.each { |p| p.card_played = nil }
         game.players = players.map(&:to_json)
         game.save
 
-        # 4. notify the players
+        if game.has_winner?
+          game.state_completed!
+          GameJob::ShowEndJob.perform_later(game.id)
+        else
+          GameJob::PrepareRoundJob.perform_now(game.id, last_trick_winner_id: winner.id)
+        end
 
-        # game.wrap_players.each do |player|
-        #   game_notifier.push_error_event(player.id, "event resolve round triggered")
-        # end
-        # raise "Not implemented"
+        return
       end
 
-      game_notifier = Utils::Notify.new(game)
       game_notifier.update_game_event_logs
       game.wrap_players.each do |player|
         game_notifier.update_player_actions(player).update_players_stat(player.id)

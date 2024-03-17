@@ -1,13 +1,9 @@
 <div class="flex">
   <div id=<%= "actions_#{session.dig("user_info", "id")}" %> class="flex">
-    <% if game.state_completed? %>
-      <div class="button bg-red-800 text-background cursor-not-allowed">結束遊戲</div>
-    <% else %>
-      <%= link_to '結束遊戲',
+    <%= button_to '結束遊戲',
         end_game_frontend_game_path(game.uuid),
         class: 'button bg-red-600 text-background hover:opacity-80',
         data: { turbo_method: :post } %>
-    <% end %>
     <%= link_to '返回首頁',
       root_path,
       class: 'button bg-white text-background hover:opacity-80',
@@ -21,7 +17,9 @@
       <% current_player.cards.each do |card| %>
         <%= button_to "#{card}", play_card_frontend_game_path(game.uuid, card:), turbo_method: :post, class: 'button w-12 bg-white text-background' %>
       <% end %>
-      <% if game.ready? && game.current_player_id == current_player.id %>
+      <% if current_player.is_out? %>
+        <p class="text-red-500">你已經出局</p>
+      <% elsif game.ready? && game.current_player_id == current_player.id %>
         <p class="text-blue-500 animate-bounce">輪到你了</p>
       <% else %>
         <p class="text-red-500">waiting</p>

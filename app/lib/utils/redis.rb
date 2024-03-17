@@ -21,6 +21,11 @@ module Utils
       client.set(key, value, ex: ex)
     end
 
+    def self.incr(key, ex: Rails.configuration.redis.expiration)
+      client.incr(key)
+      client.expire(key, ex)
+    end
+
     def self.rpush(key, value, ex: Rails.configuration.redis.expiration)
       client.expire(key, ex)
       client.rpush(key, value)
@@ -72,6 +77,12 @@ module Utils
       redis_logs
     end
 
+    def self.game_logs(game_uuid)
+      Utils::Redis.lrange("game:#{game_uuid}:events", 0, -1).map do |event|
+        JSON.parse(event)
+      end
+    end
+
     def self.last_10_game_events(game_uuid)
       lrange("game:#{game_uuid}:events", 0, 9).map do |event|
         hash = JSON.parse(event)
@@ -112,8 +123,6 @@ module Utils
 
     def self.play_card_to_trick(game_uuid, card)
       lpush("game:#{game_uuid}:trick", card)
-
-      # increment trick count
     end
   end
 end

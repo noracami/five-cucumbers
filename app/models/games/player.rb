@@ -104,10 +104,11 @@ module Games
       self.card_played = card.id
       self.cards = cards.reject { |c| c == card.id }
       self.save
-      Utils::Redis.play_card_to_trick(game_uuid, card.id)
-
       game = Game.find(game_id)
       game_notifier = Utils::Notify.new(game)
+      game_notifier.push_card_played_event(self, card.numbers)
+      Utils::Redis.play_card_to_trick(game_uuid, card.id)
+
       game_notifier.push_it_is_turn_for_player_event(
         game.players.find { |p| p["id"] == game.current_player_id }["nickname"]
       ) if game.current_player_id
@@ -116,7 +117,7 @@ module Games
         game_notifier.update_players_stat(player.id).update_player_actions(player)
       end
 
-      GameJob::EndTrickJob.perform_later(game) if Utils::Redis.n_of_cards_in_the_trick(game_uuid) == game.players.size
+      GameJob::EndTrickJob.perform_later(game) if Utils::Redis.n_of_cards_in_the_trick(game_uuid) == game.remaining_players.size
 
       self
     end
