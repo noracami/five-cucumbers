@@ -9,6 +9,7 @@ module Frontend
 
     def index
       @games = Game.playing.order(updated_at: :desc).limit(10)
+      @leader_board = GameRecord.order(rounds: :asc).limit(10)
     end
 
     def show

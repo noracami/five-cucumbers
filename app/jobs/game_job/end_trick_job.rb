@@ -48,6 +48,7 @@ module GameJob
         if game.has_winner?
           game.state_completed!
           GameJob::ShowEndJob.perform_later(game.id)
+          GameRecord.create_game_record(game)
         else
           GameJob::PrepareRoundJob.perform_now(game.id, last_trick_winner_id: winner.id)
         end

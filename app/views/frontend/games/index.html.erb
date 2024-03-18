@@ -1,25 +1,51 @@
 <h1 class="text-primary text-4xl text-center">Five Cucumbers</h1>
 <%= render 'debug_action' if Rails.env.development? %>
-<div>
-  <p class="text-secondary text-2xl">Now playing</p>
-  <%= debug @games if false %>
-  <div class="flex gap-10 p-5">
-    <% @games.each do |game| %>
-      <div class="text-secondary text-2xl border-secondary border-2 p-5">
-        <p><%= game.state %></p>
-        <p>ID: <%= game.uuid %></p>
-        <p>roomId: <%= game.room_id %></p>
-        <p>players: <%= game.players.count %></p>
-        <p>last update: <%= game.updated_at.to_time %></p>
-        <div class="flex justify-between">
-          <%= link_to 'Preview',
+<% if Rails.env.development? || ENV.fetch("FLAG_SHOW_NOW_PLAYING_GAME", false) %>
+  <div>
+    <p class="text-secondary text-2xl">Now playing</p>
+    <%= debug @games if false %>
+    <div class="flex gap-10 p-5">
+      <% @games.each do |game| %>
+        <div class="text-secondary text-2xl border-secondary border-2 p-5">
+          <p><%= game.state %></p>
+          <p>ID: <%= game.uuid %></p>
+          <p>roomId: <%= game.room_id %></p>
+          <p>players: <%= game.players.count %></p>
+          <p>last update: <%= game.updated_at.to_time %></p>
+          <div class="flex justify-between">
+            <%= link_to 'Preview',
               frontend_game_path(game.uuid),
               class: 'button bg-primary text-background hover:opacity-80' %>
-          <%= link_to 'Join',
+            <%= link_to 'Join',
               frontend_game_path(game.uuid),
               class: 'button bg-blue-700 text-background hover:opacity-80' %>
+          </div>
         </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+<div>
+  <p class="text-secondary text-2xl">Leader Board</p>
+  <div class="p-5">
+    <% @leader_board.each.with_index(1) do |row, i| %>
+      <div class="flex flex-wrap gap-2 text-secondary text-2xl p-5">
+        <p><%= i %>. </p>
+        <p><%= row.winner_nickname %> <span class="text-base">(<%= row.winner_id %>)</span></p>
+        <p>Rounds: <%= row.rounds %></p>
+        <p>Duration: <%= row.duration_inspect %></p>
+        <p>players: <%= row.player_number %></p>
+        <p class="italic w-5/6 text-right">-- <%= row.updated_at.to_time %></p>
+        <% if false %>
+          <div class="flex justify-between">
+            <%= link_to 'Preview',
+              frontend_game_path(row.game.uuid),
+              class: 'button bg-primary text-background hover:opacity-80' %>
+            <%= link_to 'Join',
+              frontend_game_path(row.game.uuid),
+              class: 'button bg-blue-700 text-background hover:opacity-80' %>
+          </div>
+        <% end %>
       </div>
     <% end %>
   </div>
-</div>
