@@ -13,6 +13,10 @@ module GameJob
       end
       game_notifier.update_game_event_logs
       game_notifier.update_game_rounds
+
+      game.reload
+      pp game.wrap_players.find { |p| p.id == game.current_player_id }
+      AiJobs::AutoMoveJob.perform_later(game_id) if game.wrap_players.find { |p| p.id == game.current_player_id }.is_ai?
     end
   end
 end

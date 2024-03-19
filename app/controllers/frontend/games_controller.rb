@@ -58,6 +58,8 @@ module Frontend
 
       RedisLogs::UpdateJob.perform_now(@game)
 
+      AiJobs::AutoMoveJob.perform_later(@game.id) if @game.wrap_players.find { |p| p.id == @game.current_player_id }&.is_ai?
+
       render json: { status: "ok" }
     end
 

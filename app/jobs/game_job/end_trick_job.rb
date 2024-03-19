@@ -60,6 +60,9 @@ module GameJob
       game.wrap_players.each do |player|
         game_notifier.update_player_actions(player).update_players_stat(player.id)
       end
+
+      game.reload
+      AiJobs::AutoMoveJob.perform_later(game.id) if game.wrap_players.find { |p| p.id == game.current_player_id }.is_ai?
     end
   end
 end

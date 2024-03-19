@@ -87,7 +87,7 @@ module Games
       player_cards = cards.map { |c| Games::Card.new(id: c).numbers }
 
       # if the player is an AI, then the card is chosen by the AI
-      card = choose_ai_card(largest_card_in_the_trick, player_cards) if is_ai?
+      card = choose_ai_card(largest_card_in_the_trick).id if is_ai?
 
       # 2. is the card in the player's hand?
       if cards.index(card).nil?
@@ -136,11 +136,20 @@ module Games
 
     private
 
-    def choose_ai_card(largest_card, player_cards)
+    def choose_ai_card(largest_card_in_the_trick)
       ai_card_candidates = cards.map { |c| Games::Card.new(id: c) }
-      ret = ai_card_candidates.sample
-      ret = ai_card_candidates.sample unless ret.playable?(largest_card, player_cards)
-      ret.id
+
+      # ret = ai_card_candidates.sample
+      # ret = ai_card_candidates.sample unless ret.playable?(largest_card, player_cards)
+      choose_as_biggest_card_as_possible(largest_card_in_the_trick, ai_card_candidates)
+    end
+
+    def choose_as_biggest_card_as_possible(largest_card, player_cards)
+      if largest_card.nil? || player_cards.max >= largest_card
+        player_cards.max
+      else
+        player_cards.min
+      end
     end
 
     def current_player_id
