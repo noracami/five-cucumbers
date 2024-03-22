@@ -2,34 +2,34 @@
   <% game.wrap_players.each do |player| %>
     <div class="mb-2 px-8">
       <% if current_player_id == player.id %>
-        <div class="flex justify-between gap-2 text-pink-500">
-          <span><%= player.nickname.truncate(20) %></span>
+        <div class="flex gap-20 text-pink-500">
+          <span>
+            <%= player.nickname.truncate(20) %>(<%= shorten_uuid player.id %>)
+          </span>
           <span>
             <% if (card_played_this_trick = player.card_played) %>
-              <span class="text-white border rounded-xl w-min p-1 text-sm"># <%= card_played_this_trick.to_card_number %></span>
+              <span class="text-white border rounded-xl w-min p-2 text-2xl"># <%= card_played_this_trick.to_card_number %></span>
             <% end %>
             <% if game.current_player_id == player.id %>
               <span class="text-primary animate-pulse">thinking...</span>
             <% end %>
-            <%= player.id %>
           </span>
         </div>
       <% else %>
-        <div class="flex justify-between gap-2 text-purple-500">
+        <div class="flex gap-20 text-purple-500">
           <span>
-            <%= player.nickname %>
+            <%= player.nickname.truncate(20) %>(<%= shorten_uuid player.id %>)
             <% if player.is_ai? %>
               <span class="text-white border rounded-ee-xl rounded-ss-xl w-min p-1 text-sm">AI</span>
             <% end %>
           </span>
           <span>
             <% if (card_played_this_trick = player.card_played) %>
-              <span class="text-white border rounded-xl w-min p-1 text-sm"># <%= card_played_this_trick.to_card_number %></span>
+              <span class="text-white border rounded-xl w-min p-2 text-2xl"># <%= card_played_this_trick.to_card_number %></span>
             <% end %>
             <% if game.current_player_id == player.id %>
               <span class="text-primary animate-pulse">thinking...</span>
             <% end %>
-            <%= player.id %>
           </span>
         </div>
       <% end %>

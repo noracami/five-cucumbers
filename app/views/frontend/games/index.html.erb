@@ -31,7 +31,7 @@
     <% @leader_board.each.with_index(1) do |row, i| %>
       <div class="flex flex-wrap gap-2 text-secondary text-2xl p-5">
         <p><%= i %>. </p>
-        <p><%= row.winner_nickname %> <span class="text-base">(<%= row.winner_id %>)</span></p>
+        <p><%= row.winner_nickname %> <span class="text-base">(<%= shorten_uuid row.winner_id %>)</span></p>
         <p>Rounds: <%= row.rounds %></p>
         <p>Duration: <%= row.duration_inspect %></p>
         <p>players: <%= row.player_number %></p>
