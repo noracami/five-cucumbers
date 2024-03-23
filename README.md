@@ -85,11 +85,11 @@ https://waterball.notion.site/v1-1-0-4020a50d26014f829492147af37db06f
   "uniqueName": "fivecucumber",
   "displayName": "黃瓜五兄弟",
   "shortDescription": "It is a trick-taking game with the goal of NOT winning the last trick!",
-  "rule": "Win tricks but not the last, that gets you cucumbers! 5+ of those and you're out!\nhttps://boardgamegeek.com/boardgame/147768/five-cucumbers",
+  "rule": "Try to avoid getting cucumbers more than 5, or you are out!",
   "imageUrl": "https://gaas-five-cucumbers.zeabur.app/watermelon.png",
   "minPlayers": 1,
   "maxPlayers": 6,
-  "frontEndUrl": "https://gaas-five-cucumbers.zeabur.app/frontend",
+  "frontEndUrl": "",
   "backEndUrl": "https://gaas-five-cucumbers.zeabur.app/api"
 }
 ```
