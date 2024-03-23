@@ -15,7 +15,7 @@ module Frontend
     def show
       if params[:token].present?
         if Rails.env.development?
-          user_info = JSON.parse(Base64.urlsafe_decode64(params[:token]))
+          user_info = GaasClient.call :fetch_user_info_in_local
           session[:user_info] = {}
           user_info.each { |k, v| session[:user_info][k.to_sym] = v }
           Utils::Notify.push_player_joined_event(@game, "Me", "player_joined(local)")
@@ -25,16 +25,12 @@ module Frontend
           session[:token] = params[:token]
           # save user in session
           # user info is fetch at GET gaas/users/me
-          url = "#{Rails.configuration.game_as_a_service.backend_host}/users/me"
-          res = HTTPX.plugin(:auth).bearer_auth(session[:token]).get(url)
+          user_info, err = GaasClient.call :fetch_user_info, token: params[:token]
+          return redirect_to frontend_game_path if err
 
-          if res.status.in? 200..299
-            session[:user_info] = {}
-            res.json.each { |k, v| session[:user_info][k.to_sym] = v }
-            Utils::Notify.push_player_joined_event(@game, session[:user_info][:nickname], "player_joined")
-          else
-            Rails.logger.error { res.body.to_s }
-          end
+          session[:user_info] = {}
+          user_info.each { |k, v| session[:user_info][k.to_sym] = v }
+          Utils::Notify.push_player_joined_event(@game, session[:user_info][:nickname], "player_joined")
         end
 
         return redirect_to frontend_game_path
