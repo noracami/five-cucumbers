@@ -13,7 +13,16 @@ Rails.application.routes.draw do
         post "play/:card" => "games#play_card", as: "play_card"
         post "ai_play/:player_id" => "games#play_card_ai", as: "ai_play"
         post :add_ai_players
+
+        namespace "v1" do
+          post :click_btn
+        end
       end
+
+      collection do
+      end
+    end
+    namespace "games" do
     end
   end
 

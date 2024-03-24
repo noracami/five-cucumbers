@@ -1,6 +1,8 @@
 module Gaas
   module Commands
     class FetchUserInfoInLocal < Gaas::BaseCommand
+      include DevelopmentOnly
+
       def self.identifier = :fetch_user_info_in_local
 
       def call(params = {})

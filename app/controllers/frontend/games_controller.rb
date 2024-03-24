@@ -14,29 +14,24 @@ module Frontend
 
     def show
       if params[:token].present?
-        if Rails.env.development?
-          user_info = GaasClient.call :fetch_user_info_in_local
-          session[:user_info] = {}
-          user_info.each { |k, v| session[:user_info][k.to_sym] = v }
-          Utils::Notify.push_player_joined_event(@game, "Me", "player_joined(local)")
-        elsif Rails.env.production? && Auth0Client.validate_token(params[:token]).error.nil?
+        # save token in session
+        session[:token] = params[:token]
+        user_info = err = nil
 
-          # save token in session
-          session[:token] = params[:token]
-          # save user in session
-          # user info is fetch at GET gaas/users/me
+        if Rails.env.development? || Rails.env.test?
+          user_info, err = GaasClient.call :fetch_user_info_in_local
+        else
           user_info, err = GaasClient.call :fetch_user_info, token: params[:token]
-          return redirect_to frontend_game_path if err
-
-          session[:user_info] = {}
-          user_info.each { |k, v| session[:user_info][k.to_sym] = v }
-          Utils::Notify.push_player_joined_event(@game, session[:user_info][:nickname], "player_joined")
         end
+
+        save_user_info_to_session user_info if err.nil?
 
         return redirect_to frontend_game_path
       end
 
       @current_player = @game.wrap_players.find { |p| p.id == current_player_id }
+
+      render 'frontend/games/v1/show'
     end
 
     def add_ai_players
@@ -99,6 +94,12 @@ module Frontend
 
     def current_player
       Games::Player.build_from_game(game: @game, player_id: current_player_id)
+    end
+
+    def save_user_info_to_session(user_info)
+      session[:user_info] = {}
+      user_info.each { |k, v| session[:user_info][k.to_sym] = v }
+      Utils::Notify.push_player_joined_event(@game, session[:user_info][:nickname], "player_joined")
     end
   end
 end
