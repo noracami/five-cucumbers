@@ -6,9 +6,12 @@ addEventListener("turbo:before-stream-render", (event) => {
   if (document.startViewTransition) {
     const originalRender = event.detail.render;
     event.detail.render = (currentElement, newElement) => {
-      document.startViewTransition(() =>
-        originalRender(currentElement, newElement)
-      );
+      document.startViewTransition(() => {
+        originalRender(currentElement, newElement);
+        setTimeout(() => {
+          document.querySelector(".chat").classList.remove("chat");
+        }, 0);
+      });
     };
   }
 });

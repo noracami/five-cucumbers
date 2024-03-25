@@ -16,6 +16,7 @@ Rails.application.routes.draw do
 
         namespace "v1" do
           post :click_btn
+          post :plus_one
         end
       end
 

@@ -12,6 +12,17 @@ module Frontend
         render 'frontend/games/v1/click_btn'
       end
 
+      def plus_one
+        session[:counter] ||= 0
+        if session[:counter] < 5
+          session[:counter] += 1
+          Turbo::StreamsChannel.broadcast_append_to "game_388", target: "plus1-target", partial: "frontend/games/v1/plus_one"
+        else
+          session[:counter] = 0
+          Turbo::StreamsChannel.broadcast_update_to "game_388", target: "plus1-target", partial: "frontend/games/v1/plus_one"
+        end
+      end
+
       def index
         @games = Game.playing.order(updated_at: :desc).limit(10)
         @leader_board = GameRecord.order(rounds: :asc).limit(10)

@@ -1,15 +1,19 @@
 <% game = @game %>
 <% current_player = @current_player %>
 <%= turbo_stream_from dom_id(game) %>
+<%= debug dom_id(game) %>
 <div class="h-screen flex flex-col gap-5 flex-wrap">
   <div class="flex-grow grid grid-cols-12 gap-5 p-5 border-secondary border-2">
+    <%# left panel: game-metadata, table, action-panel %>
     <div class="col-span-8 flex flex-col gap-5 justify-around">
+      <%# game-metadata %>
       <div class="p-2 text-white text-2xl border-secondary border-2 h-1/3">
         <p>Room ID: <%= game.room_id %></p>
         <p>Game URL: <%= frontend_game_url %></p>
         <p>Player Numbers: <%= game.players.size %></p>
         <%= render 'frontend/games/game_rounds', game:, game_status: game.current_rounds || game.state %>
       </div>
+      <%# table %>
       <div class="p-2 text-white text-4xl h-full">
         <p>Table</p>
         <div class="grid grid-cols-12 gap-5 p-5 h-full">
@@ -37,17 +41,24 @@
           </div>
         </div>
       </div>
+      <%# action-panel %>
       <div class="p-2 text-white text-4xl border-purple-500 border-2 h-3/5">
         <p>ACTIONS</p>
         <%= render 'actions', game:, current_player: %>
+        <hr>
       </div>
     </div>
+    <%# right panel: players %>
     <div class="col-end-13 col-span-4 border-secondary border-2">
       <p class="text-white">玩家：自己、其他</p>
       <p></p>
       <%= render 'game_players', game: game %>
+      <div class="m-5 p-5 border-2 border-emerald-500" id="cou">
+        <div id="plus1-target"></div>
+      </div>
     </div>
   </div>
+  <%# footer %>
   <div class="h-min p-2 bg-slate-800 text-yellow-300">
     <div>
       This game is currently in development.
@@ -58,6 +69,9 @@
     </div>
   </div>
 </div>
+<%#
+  # old stuff
+  #%>
 <div>
   <p id="some_target">some_target</p>
   <%= button_to '123',
