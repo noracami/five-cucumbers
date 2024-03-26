@@ -117,6 +117,7 @@ module Games
         game.players.find { |p| p["id"] == game.current_player_id }["nickname"]
       ) if game.current_player_id
       game_notifier.update_game_event_logs
+      game_notifier.update_played_cards_on_table(card.numbers)
       game.wrap_players.each do |player|
         game_notifier.update_players_stat(player.id).update_player_actions(player)
       end

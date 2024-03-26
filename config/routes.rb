@@ -17,13 +17,11 @@ Rails.application.routes.draw do
         namespace "v1" do
           post :click_btn
           post :plus_one
+          post :add_card
+
+          post "play/:card" => "games#play_card", as: "play_card"
         end
       end
-
-      collection do
-      end
-    end
-    namespace "games" do
     end
   end
 

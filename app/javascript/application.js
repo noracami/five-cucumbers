@@ -9,7 +9,10 @@ addEventListener("turbo:before-stream-render", (event) => {
       document.startViewTransition(() => {
         originalRender(currentElement, newElement);
         setTimeout(() => {
-          document.querySelector(".chat").classList.remove("chat");
+          document.querySelector(".chat")?.classList?.remove("chat");
+          document
+            .querySelector(".played-card")
+            ?.classList?.remove("played-card");
         }, 0);
       });
     };

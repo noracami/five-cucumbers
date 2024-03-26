@@ -13,14 +13,20 @@ module Frontend
       end
 
       def plus_one
+        dom_id = "game_#{params[:id]}"
         session[:counter] ||= 0
         if session[:counter] < 5
           session[:counter] += 1
-          Turbo::StreamsChannel.broadcast_append_to "game_388", target: "plus1-target", partial: "frontend/games/v1/plus_one"
+          Turbo::StreamsChannel.broadcast_append_to dom_id, target: "plus1-target", partial: "frontend/games/v1/plus_one"
         else
           session[:counter] = 0
-          Turbo::StreamsChannel.broadcast_update_to "game_388", target: "plus1-target", partial: "frontend/games/v1/plus_one"
+          Turbo::StreamsChannel.broadcast_update_to dom_id, target: "plus1-target", partial: "frontend/games/v1/plus_one"
         end
+      end
+
+      def add_card
+        dom_id = "game_#{params[:id]}"
+        Turbo::StreamsChannel.broadcast_append_to dom_id, target: "played-cards-on-table", partial: "frontend/games/v1/played_card", locals: { number: rand(1..15) }
       end
 
       def index
@@ -67,7 +73,9 @@ module Frontend
 
         AiJobs::AutoMoveJob.perform_later(@game.id) if @game.wrap_players.find { |p| p.id == @game.current_player_id }&.is_ai?
 
-        render json: { status: "ok" }
+        # render json: { status: "ok" }
+        # head :no_content
+        # head: :bad_request
       end
 
       def play_card_ai

@@ -62,3 +62,33 @@
   animation-duration: 200ms;
   animation-name: -ua-view-transition-fade-in, rotate-in;
 }
+
+/* play card animation */
+.played-card {
+  view-transition-name: play_card;
+  contain: layout;
+}
+
+@keyframes flip-out {
+  to {
+    transform: rotateY(90deg);
+  }
+}
+
+@keyframes flip-in {
+  from {
+    transform: rotateY(-90deg);
+  }
+}
+
+::view-transition-old(play_card) {
+  animation-duration: 200ms;
+  /* animation-name: -ua-view-transition-fade-out, flip-out; */
+  animation-name: -ua-view-transition-fade-out, rotate-out;
+}
+
+::view-transition-new(play_card) {
+  animation-duration: 200ms;
+  /* animation-name: -ua-view-transition-fade-in, flip-in; */
+  animation-name: -ua-view-transition-fade-in, rotate-in;
+}

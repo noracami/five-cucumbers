@@ -1,0 +1,14 @@
+<% case Game.states[pointer_index] + 1 %>
+<% when 1 %>
+  <p class="col-start-1"><%= pointer_index %></p>
+<% when 2 %>
+  <p class="col-start-2"><%= pointer_index %></p>
+<% when 3 %>
+  <p class="col-start-3"><%= pointer_index %></p>
+<% when 4 %>
+  <p class="col-start-4"><%= pointer_index %></p>
+<% when 5 %>
+  <p class="col-start-5"><%= pointer_index %></p>
+<% else %>
+  <p class="col-start-6"><%= pointer_index %></p>
+<% end %>

@@ -102,13 +102,14 @@ module Utils
       Utils::Redis.lpush("game:#{game.uuid}:events", message.to_json)
     end
 
-    def update_redis_logs()
-      Turbo::StreamsChannel.broadcast_update_to(
+    def update_played_cards_on_table(card_numbers)
+      Turbo::StreamsChannel.broadcast_append_to(
         "game_#{game_id}",
-        target: "game_events_game_#{game_id}",
-        partial: "frontend/games/game_events",
-        locals: { game_events: Utils::Redis.last_10_game_events(game_uuid), game: game }
+        target: "played-cards-on-table",
+        partial: "frontend/games/v1/played_card",
+        locals: { number: card_numbers }
       )
+      self
     end
 
     def self.push_player_joined_event(game, player, event = 'player_joined')
@@ -191,42 +192,51 @@ module Utils
       )
     end
 
-    def self.push_generic_event(game, event_name = 'generic_event', data = {})
-      message = {
-        event: event_name,
-        data: data,
-        time: Time.current
-      }
-      Utils::Redis.lpush("game:#{game.uuid}:events", message.to_json)
-      Turbo::StreamsChannel.broadcast_update_to(
-        "game_#{game.id}",
-        target: "game_events_game_#{game.id}",
-        partial: "frontend/games/game_events",
-        locals: {
-          game_events: Utils::Redis.last_10_game_events(game.uuid),
-          game: game
-        }
-      )
-    end
-
     def self.push_game_ended_event(game)
       new(game).push_game_ended_event
     end
 
-    def self.push_game_started_event(game)
-      message = {
-        event: 'game_started',
-        game: game.to_json
-      }
-      Utils::Redis.lpush(game.id, message.to_json)
-    end
+    # def update_redis_logs()
+    #   Turbo::StreamsChannel.broadcast_update_to(
+    #     "game_#{game_id}",
+    #     target: "game_events_game_#{game_id}",
+    #     partial: "frontend/games/game_events",
+    #     locals: { game_events: Utils::Redis.last_10_game_events(game_uuid), game: game }
+    #   )
+    # end
 
-    def self.push_game_state_changed_event(game)
-      message = {
-        event: 'game_state_changed',
-        game: game.to_json
-      }
-      Utils::Redis.lpush(game.id, message.to_json)
-    end
+    # def self.push_generic_event(game, event_name = 'generic_event', data = {})
+    #   message = {
+    #     event: event_name,
+    #     data: data,
+    #     time: Time.current
+    #   }
+    #   Utils::Redis.lpush("game:#{game.uuid}:events", message.to_json)
+    #   Turbo::StreamsChannel.broadcast_update_to(
+    #     "game_#{game.id}",
+    #     target: "game_events_game_#{game.id}",
+    #     partial: "frontend/games/game_events",
+    #     locals: {
+    #       game_events: Utils::Redis.last_10_game_events(game.uuid),
+    #       game: game
+    #     }
+    #   )
+    # end
+
+    # def self.push_game_started_event(game)
+    #   message = {
+    #     event: 'game_started',
+    #     game: game.to_json
+    #   }
+    #   Utils::Redis.lpush(game.id, message.to_json)
+    # end
+
+    # def self.push_game_state_changed_event(game)
+    #   message = {
+    #     event: 'game_state_changed',
+    #     game: game.to_json
+    #   }
+    #   Utils::Redis.lpush(game.id, message.to_json)
+    # end
   end
 end

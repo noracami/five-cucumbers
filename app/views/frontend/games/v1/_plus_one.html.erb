@@ -1,8 +1,9 @@
-<% if Time.now.to_i % 4 == 0 %>
+<% case Time.now.to_i % 4 %>
+<% when 0 %>
   <p class="bg-blue-500 text-xl chat">chat</p>
-<% elsif Time.now.to_i % 4 == 1 %>
+<% when 1 %>
   <p class="bg-red-500 text-2xl chat">some_target</p>
-<% elsif Time.now.to_i % 4 == 2 %>
+<% when 2 %>
   <p class="bg-amber-500 text-3xl chat">some_target</p>
 <% else %>
   <p class="bg-emerald-500 text-4xl chat">some_target</p>

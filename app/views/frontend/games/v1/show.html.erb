@@ -11,27 +11,30 @@
         <p>Room ID: <%= game.room_id %></p>
         <p>Game URL: <%= frontend_game_url %></p>
         <p>Player Numbers: <%= game.players.size %></p>
-        <%= render 'frontend/games/game_rounds', game:, game_status: game.current_rounds || game.state %>
+        <div class="flex gap-2">
+          <p class="">Status</p>
+          <div class="game-state-container flex-grow grid grid-cols-6 text-center text-xl">
+            <div class="grid grid-cols-subgrid col-span-6">
+              <p>Initializing</p>
+              <p>New Round Preparing</p>
+              <p>Running</p>
+              <p>End of Trick</p>
+              <p>End of Round</p>
+              <p>End of Game</p>
+            </div>
+            <div class="grid grid-cols-subgrid col-span-6 text-4xl" id="game-state-pointer">
+              <%= render 'frontend/games/v1/game_state_pointer', pointer_index: game.state %>
+            </div>
+          </div>
+        </div>
       </div>
       <%# table %>
       <div class="p-2 text-white text-4xl h-full">
         <p>Table</p>
         <div class="grid grid-cols-12 gap-5 p-5 h-full">
-          <div class="col-span-10 flex justify-center items-center gap-10 p-2 w-full">
-            <% game.remaining_players.each do |player| %>
-              <% if player.card_played %>
-                <div class="border-2 rounded-2xl border-white h-1/2 min-w-24 max-w-28">
-                  <div class="flex justify-center items-center h-full">
-                    <%= player.card_played %>
-                  </div>
-                </div>
-              <% else %>
-                <div class="border-2 rounded-2xl border-white h-1/2 min-w-24 max-w-28 animate-pulse">
-                  <div class="flex justify-center items-center h-full">
-                    <img src="/cucumber.png" alt="" sizes="64px" class="w-16 grayscale">
-                  </div>
-                </div>
-              <% end %>
+          <div class="col-span-10 flex justify-center items-center gap-10 p-2 w-full" id="played-cards-on-table">
+            <% Utils::Redis.read_trick(game.uuid).reverse_each do |card| %>
+              <%= render 'frontend/games/v1/played_card', number: card.numbers %>
             <% end %>
           </div>
           <div class="col-span-2 text-end text-base font-mono">
